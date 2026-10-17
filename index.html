@@ -101,6 +101,7 @@ p { margin: 0; }
 .hero { padding-block: 72px 56px; }
 .hero .envoltura { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; }
 .hero h1 { font-size: clamp(34px, 5.4vw, 60px); letter-spacing: -.01em; }
+.enlace-banco { color: var(--crema); text-decoration-color: var(--naranja); text-underline-offset: 3px; }
 .hero h1 em { font-style: normal; color: var(--naranja); }
 .hero .bajada { margin-top: 22px; font-size: 18px; color: var(--crema-suave); max-width: 34em; }
 .acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
@@ -267,6 +268,23 @@ p { margin: 0; }
 .calc-total span { font-family: var(--mono); font-size: 11px; color: var(--crema-suave); }
 .nota-ejemplo { margin-top: 28px; font-size: 12px; color: var(--tenue); font-family: var(--mono); }
 
+/* Bancos compatibles */
+.bancos { padding-block: 56px; }
+.bancos-fila { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
+.bancos-texto { display: grid; gap: 12px; min-width: 0; }
+.bancos-texto h2 { font-size: clamp(24px, 3vw, 32px); }
+.bancos-texto p:last-child { color: var(--crema-suave); }
+.bancos-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.banco-tarjeta { border: 1px solid var(--linea); border-radius: 18px; padding: 18px; display: grid; gap: 16px; align-content: start; background: var(--noche-2); min-width: 0; }
+.banco-logo { height: 84px; border-radius: 12px; background: #ffffff; display: grid; place-items: center; padding: 14px 18px; }
+.banco-logo img { max-height: 56px; width: auto; max-width: 100%; object-fit: contain; }
+.logo-texto { font-family: var(--display); font-weight: 700; font-size: 24px; color: #101820; letter-spacing: -.01em; }
+.banco-info { display: grid; gap: 8px; }
+.banco-info h3 { font-size: 17px; }
+.banco-info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--crema-suave); }
+.banco-info li { display: flex; gap: 8px; }
+.banco-info li::before { content: "✓"; color: var(--verde); }
+
 /* Bandas */
 .banda { padding-block: 84px; border-top: 1px solid var(--linea); }
 .banda-alterna { background: var(--noche-2); }
@@ -386,6 +404,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .hero .envoltura, .captura, .captura.invertida { grid-template-columns: 1fr; gap: 36px; }
   .captura.invertida .captura-texto { order: 0; }
   .app { grid-template-columns: 1fr; }
+  .bancos-fila { grid-template-columns: 1fr; gap: 28px; }
   .app-lado { display: none; }
   .posicion-rejilla { grid-template-columns: 1fr; }
   .capacidades { grid-template-columns: repeat(2, 1fr); }
@@ -403,6 +422,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .compra { padding: 22px; }
   .formulario { grid-template-columns: 1fr; }
   .app-tiles { grid-template-columns: repeat(2, 1fr); }
+  .bancos-lista { grid-template-columns: 1fr; }
   .app .opc { display: none; }
   .orden-pago dl { grid-template-columns: repeat(2, auto); }
   .orden-cifras strong { font-size: 13px; }
@@ -435,7 +455,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
       <div>
         <p class="etiqueta">Binance P2P · USDT / VES · Windows</p>
         <h1 style="margin-top:16px">Tu P2P en <em>piloto automático</em>.</h1>
-        <p class="bajada">P2PAutoPay paga tus órdenes de compra por Banesco o Mercantil, sube el comprobante a Binance, marca la orden como pagada y vigila el puesto de tu anuncio. Tú dejas de estar pegado a la pantalla.</p>
+        <p class="bajada">P2PAutoPay paga tus órdenes de compra por <a href="#bancos" class="enlace-banco">Banesco o Mercantil</a>, sube el comprobante a Binance, marca la orden como pagada y vigila el puesto de tu anuncio. Tú dejas de estar pegado a la pantalla.</p>
         <div class="acciones">
           <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="hero">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
@@ -503,6 +523,42 @@ a.video:hover .reproducir { transform: scale(1.06); }
           </ol>
         </div>
         <p class="nota-escena">Ejemplo con datos ficticios</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda bancos" id="bancos">
+    <div class="envoltura">
+      <div class="bancos-fila">
+        <div class="bancos-texto">
+          <p class="etiqueta">Bancos compatibles</p>
+          <h2>Paga desde Banesco o Mercantil.</h2>
+          <p>El bot entra a la banca en línea de tu banco y hace cada transferencia por ti. Si tienes cuenta en los dos, eliges con cuál pagar.</p>
+        </div>
+        <div class="bancos-lista">
+          <article class="banco-tarjeta">
+            <div class="banco-logo" data-banco-logo="banesco"><span class="logo-texto">Banesco</span></div>
+            <div class="banco-info">
+              <h3>Banesco</h3>
+              <ul>
+                <li>Paga por BanescOnline</li>
+                <li>Comprobante de cada pago</li>
+                <li>Pago a otras cuentas Banesco</li>
+              </ul>
+            </div>
+          </article>
+          <article class="banco-tarjeta">
+            <div class="banco-logo" data-banco-logo="mercantil"><span class="logo-texto">Mercantil</span></div>
+            <div class="banco-info">
+              <h3>Mercantil</h3>
+              <ul>
+                <li>Paga por Mercantil en Línea</li>
+                <li>Lee la clave OTP de tu correo</li>
+                <li>Comprobante de cada pago</li>
+              </ul>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   </section>
