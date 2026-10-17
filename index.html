@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>P2PAutoPay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="P2PAutoPay automatiza tu P2P de Binance USDT/VES: paga por Banesco o Mercantil, sube el comprobante, marca la orden y vigila el puesto de tu anuncio.">
+<meta property="og:title" content="P2PAutoPay: tu P2P en piloto automático">
+<meta property="og:description" content="Pagos automáticos por Banesco y Mercantil, comprobante en Binance en segundos y lectura del mercado en vivo. Programa para Windows.">
+<meta property="og:image" content="img/posicionamiento.png">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<style>
+/* Plan: una sola noche de mesa de operaciones. Fondo oscuro de marca, el naranja del
+   latido solo marca lo que se mueve (pagos, botones, estados). Hero = un recibo de orden
+   que se completa solo; abajo, capacidades, pasos, videos y licencias en bandas. */
+@font-face {
+  font-family: "Unbounded";
+  src: url("fuente/unbounded.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+:root {
+  --noche: #101820;
+  --noche-2: #16212c;
+  --noche-3: #1d2a37;
+  --linea: #2a3846;
+  --crema: #F4F1EA;
+  --crema-suave: #b9c0c6;
+  --tenue: #8692a0;
+  --naranja: #FF7A45;
+  --naranja-fuerte: #C2410C;
+  --verde: #3ecf8e;
+  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --texto: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
+  --ancho: 1120px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+[id] { scroll-margin-top: 84px; }
+body {
+  margin: 0;
+  background: var(--noche);
+  color: var(--crema);
+  font-family: var(--texto);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--noche);
+}
+img { max-width: 100%; display: block; }
+a { color: var(--naranja); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--naranja); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+.envoltura {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.etiqueta {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--naranja);
+}
+
+/* Barra superior */
+.barra {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--noche) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--linea);
+}
+.barra .envoltura { display: flex; align-items: center; gap: 24px; padding-block: 14px; }
+.marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--crema); font-family: var(--display); font-weight: 600; font-size: 18px; }
+.marca img { width: 30px; height: 30px; }
+.marca b { color: var(--naranja); font-weight: 600; }
+.menu { display: flex; gap: 22px; margin-left: auto; }
+.menu a { color: var(--crema-suave); text-decoration: none; font-size: 14px; }
+.menu a:hover { color: var(--crema); }
+.boton {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 600; font-size: 15px;
+  text-decoration: none; border-radius: 12px; padding: 14px 22px;
+  transition: transform .15s ease, background .15s ease;
+}
+.boton-principal { background: var(--naranja); color: var(--noche); }
+.boton-principal:hover { background: #ff8d60; transform: translateY(-1px); }
+.boton-secundario { color: var(--crema); border: 1px solid var(--linea); }
+.boton-secundario:hover { border-color: var(--crema-suave); }
+.barra .boton { padding: 9px 16px; font-size: 13px; border-radius: 10px; }
+
+/* Hero */
+.hero { padding-block: 72px 56px; }
+.hero .envoltura { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+.hero h1 { font-size: clamp(34px, 5.4vw, 60px); letter-spacing: -.01em; }
+.hero h1 em { font-style: normal; color: var(--naranja); }
+.hero .bajada { margin-top: 22px; font-size: 18px; color: var(--crema-suave); max-width: 34em; }
+.acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.nota-descarga { margin-top: 14px; font-size: 13px; color: var(--tenue); font-family: var(--mono); }
+
+/* Recibo de orden: el momento firma de la pagina */
+.recibo {
+  background: var(--noche-2); border: 1px solid var(--linea); border-radius: 18px;
+  padding: 22px 22px 18px; font-family: var(--mono); font-size: 13px;
+  box-shadow: 0 30px 80px -40px rgba(255, 122, 69, .35);
+  min-width: 0;
+}
+.recibo-cabeza { display: flex; justify-content: space-between; gap: 12px; color: var(--tenue); font-size: 12px; }
+.recibo-monto { margin-top: 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.recibo-monto strong { font-family: var(--display); font-size: 30px; font-weight: 600; color: var(--crema); font-variant-numeric: tabular-nums; }
+.recibo-monto span { color: var(--crema-suave); }
+.latido { width: 100%; height: 48px; margin: 14px 0 6px; }
+.latido path { fill: none; stroke: var(--naranja); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 520; stroke-dashoffset: 0; animation: latir 3.2s ease-in-out infinite; }
+@keyframes latir { 0% { stroke-dashoffset: 520; } 45%, 100% { stroke-dashoffset: 0; } }
+.pasos-orden { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.pasos-orden li { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--linea); align-items: center; }
+.pasos-orden time { color: var(--tenue); font-variant-numeric: tabular-nums; }
+.pasos-orden .estado { font-size: 11px; padding: 3px 8px; border-radius: 99px; background: color-mix(in srgb, var(--verde) 16%, transparent); color: var(--verde); white-space: nowrap; }
+.pasos-orden li { animation: aparecer .5s ease both; }
+.pasos-orden li:nth-child(2) { animation-delay: .5s; }
+.pasos-orden li:nth-child(3) { animation-delay: 1s; }
+.pasos-orden li:nth-child(4) { animation-delay: 1.5s; }
+@keyframes aparecer { from { opacity: .25; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+.recibo-pie { margin-top: 10px; color: var(--tenue); font-size: 11px; }
+
+/* Bandas */
+.banda { padding-block: 84px; border-top: 1px solid var(--linea); }
+.banda-alterna { background: var(--noche-2); }
+.encabezado { display: grid; gap: 14px; max-width: 46em; margin-bottom: 44px; }
+.encabezado h2 { font-size: clamp(26px, 3.4vw, 38px); }
+.encabezado p { color: var(--crema-suave); font-size: 17px; }
+
+/* Capacidades */
+.capacidades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--linea); border: 1px solid var(--linea); border-radius: 18px; overflow: hidden; }
+.capacidad { background: var(--noche); padding: 28px 26px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.capacidad svg { width: 28px; height: 28px; stroke: var(--naranja); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.capacidad h3 { font-size: 17px; margin-top: 6px; }
+.capacidad p { color: var(--crema-suave); font-size: 15px; }
+.capacidad ul { margin: 4px 0 0; padding-left: 18px; color: var(--crema-suave); font-size: 14px; display: grid; gap: 4px; }
+
+/* Capturas */
+.captura { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
+.captura + .captura { margin-top: 72px; }
+.captura.invertida { grid-template-columns: 1.1fr .9fr; }
+.captura.invertida .captura-texto { order: 2; }
+.captura-texto { display: grid; gap: 14px; min-width: 0; }
+.captura-texto h3 { font-size: 24px; }
+.captura-texto p { color: var(--crema-suave); }
+.marco { border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; background: var(--noche-3); box-shadow: 0 24px 60px -30px rgba(0, 0, 0, .7); }
+.marco-barra { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--linea); }
+.marco-barra i { width: 9px; height: 9px; border-radius: 50%; background: var(--linea); }
+
+/* Pasos de uso: secuencia real */
+.pasos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: paso; list-style: none; margin: 0; padding: 0; }
+.pasos li { counter-increment: paso; border-top: 2px solid var(--naranja); padding-top: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.pasos li::before { content: "Paso " counter(paso); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--naranja); }
+.pasos h3 { font-size: 17px; }
+.pasos p { color: var(--crema-suave); font-size: 15px; }
+
+/* Videos */
+.videos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.video { display: grid; gap: 12px; text-decoration: none; color: inherit; min-width: 0; }
+.video-pantalla {
+  aspect-ratio: 16 / 9; max-width: 100%; border-radius: 14px; border: 1px solid var(--linea);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 122, 69, .14), transparent 55%),
+    var(--noche-3);
+  display: grid; place-items: center; position: relative; overflow: hidden;
+}
+.video-pantalla .reproducir { width: 64px; height: 64px; border-radius: 50%; background: var(--naranja); display: grid; place-items: center; }
+.video-pantalla .reproducir svg { width: 22px; height: 22px; fill: var(--noche); margin-left: 4px; }
+.video-pantalla .duracion { position: absolute; right: 12px; bottom: 10px; font-family: var(--mono); font-size: 12px; color: var(--crema-suave); background: rgba(16, 24, 32, .8); padding: 2px 8px; border-radius: 6px; }
+.video.pronto .reproducir { background: var(--linea); }
+.video.pronto .reproducir svg { fill: var(--crema-suave); }
+.video h3 { font-size: 16px; }
+.video p { color: var(--crema-suave); font-size: 14px; }
+a.video:hover .reproducir { transform: scale(1.06); }
+.reproducir { transition: transform .15s ease; }
+
+/* Prueba gratis */
+.vitrina { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center; border: 1px solid var(--naranja-fuerte); border-radius: 18px; padding: 34px; background: linear-gradient(120deg, rgba(194, 65, 12, .18), transparent 60%); }
+.vitrina h2 { font-size: clamp(22px, 2.8vw, 30px); }
+.vitrina p { color: var(--crema-suave); margin-top: 10px; max-width: 40em; }
+
+/* Licencias */
+.planes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.plan { border: 1px solid var(--linea); border-radius: 18px; padding: 30px 28px; display: grid; gap: 12px; align-content: start; background: var(--noche); min-width: 0; }
+.plan.destacado { border-color: var(--naranja); box-shadow: 0 30px 70px -45px rgba(255, 122, 69, .5); }
+.plan.proximamente { background: var(--noche-2); }
+.plan.proximamente .precio strong { color: var(--crema-suave); }
+.plan-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.plan h3 { font-size: 20px; }
+.sello { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--naranja); border: 1px solid var(--naranja-fuerte); border-radius: 99px; padding: 4px 10px; }
+.plan .precio { display: flex; align-items: baseline; gap: 10px; }
+.plan .precio strong { font-family: var(--display); font-size: 48px; font-weight: 600; line-height: 1; color: var(--naranja); font-variant-numeric: tabular-nums; }
+.plan .precio span { font-family: var(--mono); color: var(--crema-suave); font-size: 14px; }
+.plan-nota { color: var(--crema); font-weight: 600; }
+.plan-detalle { color: var(--crema-suave); font-size: 15px; }
+.plan .boton { justify-self: start; margin-top: 8px; }
+.como-licencia { margin-top: 28px; color: var(--crema-suave); font-size: 15px; max-width: 52em; }
+
+/* Pedido de licencia */
+.compra { margin-top: 36px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; border: 1px solid var(--linea); border-radius: 18px; padding: 32px; background: var(--noche-2); }
+.compra-texto { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.compra-texto h3 { font-size: 22px; }
+.compra-texto p { color: var(--crema-suave); font-size: 15px; }
+.contacto-directo strong { color: var(--crema); }
+.formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; min-width: 0; }
+.formulario label { display: grid; gap: 6px; font-size: 13px; color: var(--crema-suave); min-width: 0; }
+.formulario .ancho { grid-column: 1 / -1; }
+.formulario input, .formulario select, .formulario textarea {
+  font: inherit; font-size: 15px; color: var(--crema); background: var(--noche);
+  border: 1px solid var(--linea); border-radius: 10px; padding: 11px 12px; width: 100%;
+}
+.formulario input:focus, .formulario select:focus, .formulario textarea:focus { outline: none; border-color: var(--naranja); }
+.formulario textarea { resize: vertical; }
+.opcional { color: var(--tenue); }
+.fila-enviar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.fila-enviar button { border: 0; cursor: pointer; }
+.fila-enviar button:disabled { opacity: .6; cursor: wait; }
+.aviso { font-size: 14px; color: var(--crema-suave); }
+.aviso[data-tipo="ok"] { color: var(--verde); }
+.aviso[data-tipo="error"] { color: var(--naranja); }
+
+/* Preguntas */
+.preguntas { display: grid; gap: 10px; max-width: 52em; }
+.preguntas details { border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; background: var(--noche); }
+.preguntas summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.preguntas summary::after { content: "+"; color: var(--naranja); font-family: var(--mono); font-size: 18px; line-height: 1; }
+.preguntas details[open] summary::after { content: "−"; }
+.preguntas details p { margin-top: 10px; color: var(--crema-suave); font-size: 15px; }
+
+/* Cierre y pie */
+.cierre { text-align: left; display: grid; gap: 20px; justify-items: start; }
+.cierre h2 { font-size: clamp(28px, 4vw, 44px); max-width: 16em; }
+.pie { border-top: 1px solid var(--linea); padding-block: 36px 48px; color: var(--tenue); font-size: 13px; }
+.pie .envoltura { display: grid; gap: 14px; }
+.pie-fila { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.pie a { color: var(--crema-suave); }
+
+@media (max-width: 960px) {
+  .hero .envoltura, .captura, .captura.invertida { grid-template-columns: 1fr; gap: 36px; }
+  .captura.invertida .captura-texto { order: 0; }
+  .capacidades { grid-template-columns: repeat(2, 1fr); }
+  .pasos { grid-template-columns: repeat(2, 1fr); }
+  .menu { display: none; }
+  .compra { grid-template-columns: 1fr; gap: 24px; }
+  .barra .boton { margin-left: auto; }
+}
+@media (max-width: 600px) {
+  .hero { padding-block: 44px 36px; }
+  .banda { padding-block: 60px; }
+  .capacidades, .pasos, .videos { grid-template-columns: 1fr; }
+  .planes { grid-template-columns: 1fr; }
+  .vitrina { grid-template-columns: 1fr; padding: 24px; }
+  .compra { padding: 22px; }
+  .formulario { grid-template-columns: 1fr; }
+  .pasos-orden li { grid-template-columns: 58px 1fr; }
+  .pasos-orden .estado { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="envoltura">
+    <a class="marca" href="#inicio"><img src="img/logo.svg" alt="">P2P<b>AutoPay</b></a>
+    <nav class="menu" aria-label="Secciones">
+      <a href="#capacidades">Capacidades</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#videos">Videos</a>
+      <a href="#licencias">Licencias</a>
+      <a href="#preguntas">Preguntas</a>
+    </nav>
+    <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="barra">Descargar</a>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero">
+    <div class="envoltura">
+      <div>
+        <p class="etiqueta">Binance P2P · USDT / VES · Windows</p>
+        <h1 style="margin-top:16px">Tu P2P en <em>piloto automático</em>.</h1>
+        <p class="bajada">P2PAutoPay paga tus órdenes de compra por Banesco o Mercantil, sube el comprobante a Binance, marca la orden como pagada y vigila el puesto de tu anuncio. Tú dejas de estar pegado a la pantalla.</p>
+        <div class="acciones">
+          <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="hero">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+            Descargar para Windows
+          </a>
+          <a class="boton boton-secundario" href="#videos">Ver cómo funciona</a>
+        </div>
+        <p class="nota-descarga">Versión <span data-version>1.1.1</span> · gratis para probar · se actualiza solo</p>
+      </div>
+
+      <div class="recibo" aria-label="Ejemplo de una orden pagada por el bot">
+        <div class="recibo-cabeza"><span>ORDEN DE COMPRA · EJEMPLO</span><span>Banesco → Banesco</span></div>
+        <div class="recibo-monto"><strong>1.078,75 Bs</strong><span>25 USDT × 43,15</span></div>
+        <svg class="latido" viewBox="0 0 400 48" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 H150 L170 8 L196 44 L214 30 H400"/></svg>
+        <ol class="pasos-orden">
+          <li><time>14:02:07</time><span>Orden detectada en Binance</span><span class="estado">vista</span></li>
+          <li><time>14:02:41</time><span>Transferencia hecha en el banco</span><span class="estado">pagada</span></li>
+          <li><time>14:02:44</time><span>Comprobante capturado</span><span class="estado">guardado</span></li>
+          <li><time>14:02:48</time><span>Subido y marcado como pagado</span><span class="estado">listo</span></li>
+        </ol>
+        <p class="recibo-pie">Si algo falla, la orden queda en Revisión y la cola sigue.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda banda-alterna" id="capacidades">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Capacidades</p>
+        <h2>Todo tu flujo P2P en un solo programa.</h2>
+        <p>Pagos, Binance, posicionamiento y avisos trabajan juntos en una ventana. Ligero para PCs modestas y sin páginas web que abrir.</p>
+      </div>
+      <div class="capacidades">
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+          <h3>Bot de pagos</h3>
+          <p>Transferencias Banesco y Mercantil en cola, una tras otra, sin que toques el teclado.</p>
+          <ul><li>Captura el comprobante de cada pago</li><li>No paga órdenes vencidas</li><li>Un error manda la orden a Revisión, nunca traba la cola</li></ul>
+        </article>
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          <h3>Vigilante de Binance</h3>
+          <p>Detecta tus órdenes de compra, sube el comprobante y marca "pagado" en segundos.</p>
+          <ul><li>Tus clientes esperan menos</li><li>Mejor tiempo de pago en tu perfil</li></ul>
+        </article>
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+          <h3>Posicionamiento</h3>
+          <p>Lee el mercado USDT/VES en vivo y te dice dónde está tu anuncio frente a la competencia.</p>
+          <ul><li>Calculadora de ciclos y ganancia</li><li>Estrategias con datos reales</li><li>Vigía del puesto de tu anuncio</li></ul>
+        </article>
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/><path d="m9 13 8-6"/></svg>
+          <h3>Telegram como centro de mando</h3>
+          <p>Recibe avisos en el teléfono cuando una orden necesita tu revisión. Opcional.</p>
+        </article>
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+          <h3>Tus claves no se guardan</h3>
+          <p>Tú inicias sesión en el banco y en Binance. Los códigos de pago viven solo en memoria mientras el programa está abierto.</p>
+        </article>
+        <article class="capacidad">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+          <h3>Siempre al día</h3>
+          <p>Al abrir, el programa te avisa de la versión nueva y se actualiza con un clic.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda">
+    <div class="envoltura">
+      <div class="captura">
+        <div class="captura-texto">
+          <p class="etiqueta">Cola de pagos</p>
+          <h3>Ves cada orden y en qué va.</h3>
+          <p>Pendiente, procesando, revisión, completada. Cada pago queda con su referencia y su comprobante, listo para tu contabilidad.</p>
+        </div>
+        <div class="marco"><div class="marco-barra"><i></i><i></i><i></i></div><img src="img/cola.png" alt="Pantalla de la cola de pagos de P2PAutoPay" loading="lazy" width="1320" height="840"></div>
+      </div>
+      <div class="captura invertida">
+        <div class="captura-texto">
+          <p class="etiqueta">Posicionamiento</p>
+          <h3>Saca la cuenta antes de mover tu capital.</h3>
+          <p>Pon tu precio de compra y de venta, tu nivel de comerciante y tus ciclos. La calculadora te dice cuánto queda después de comisiones, en USDT y en bolívares.</p>
+        </div>
+        <div class="marco"><div class="marco-barra"><i></i><i></i><i></i></div><img src="img/posicionamiento.png" alt="Calculadora de ciclos del posicionamiento de P2PAutoPay" loading="lazy" width="1320" height="840"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda banda-alterna" id="como-funciona">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Cómo funciona</p>
+        <h2>De la descarga al primer pago automático.</h2>
+      </div>
+      <ol class="pasos">
+        <li><h3>Instala</h3><p>Descarga el instalador y ábrelo. Si Windows avisa, pulsa "Más información" y luego "Ejecutar de todas formas".</p></li>
+        <li><h3>Configura una vez</h3><p>Un asistente te pide tu banco, la carpeta de comprobantes y, si quieres, tu Telegram.</p></li>
+        <li><h3>Inicia sesión tú</h3><p>El programa abre Chrome en tu banco y en Binance. Entras con tus datos, como siempre.</p></li>
+        <li><h3>Activa y suelta</h3><p>Pega tu licencia y pulsa Iniciar. Desde ahí el bot paga, sube comprobantes y te avisa.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="banda" id="videos">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Videos</p>
+        <h2>Míralo trabajar.</h2>
+        <p>Guías cortas para dejar el programa listo y sacarle provecho.</p>
+      </div>
+      <div class="videos" id="lista-videos">
+        <div class="video pronto">
+          <div class="video-pantalla"><span class="reproducir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg></span><span class="duracion">Próximamente</span></div>
+          <h3>Instalar y configurar P2PAutoPay</h3>
+          <p>Descarga, instalación y el asistente de configuración inicial.</p>
+        </div>
+        <div class="video pronto">
+          <div class="video-pantalla"><span class="reproducir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg></span><span class="duracion">Próximamente</span></div>
+          <h3>Tu primer pago automático</h3>
+          <p>Iniciar sesión, arrancar el bot y ver una orden pagarse sola.</p>
+        </div>
+        <div class="video pronto">
+          <div class="video-pantalla"><span class="reproducir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg></span><span class="duracion">Próximamente</span></div>
+          <h3>Posicionamiento y calculadora</h3>
+          <p>Leer el mercado, elegir estrategia y calcular tu ganancia por ciclo.</p>
+        </div>
+        <div class="video pronto">
+          <div class="video-pantalla"><span class="reproducir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg></span><span class="duracion">Próximamente</span></div>
+          <h3>Telegram y órdenes en revisión</h3>
+          <p>Conectar los avisos al teléfono y resolver una orden que quedó en Revisión.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda banda-alterna">
+    <div class="envoltura">
+      <div class="vitrina">
+        <div>
+          <p class="etiqueta">Pruébalo gratis</p>
+          <h2 style="margin-top:10px">Instálalo hoy y mira el mercado en vivo sin pagar nada.</h2>
+          <p>Sin licencia, P2PAutoPay funciona en modo vitrina: el posicionamiento lee el mercado, la calculadora y las estrategias funcionan, y recorres todo el programa. Los pagos y Binance se encienden al activar tu licencia.</p>
+        </div>
+        <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="vitrina">Descargar gratis</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda" id="licencias">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Licencias</p>
+        <h2>Un precio claro según tu nivel en Binance.</h2>
+        <p>Cada licencia es para una PC y funciona sin internet. Si cambias de PC, te la pasamos.</p>
+      </div>
+      <div class="planes" id="planes">
+        <article class="plan destacado">
+          <div class="plan-cabeza"><h3>No verificados</h3></div>
+          <p class="precio"><strong>$80</strong><span>pago único</span></p>
+          <p class="plan-nota">Licencia ilimitada para una PC</p>
+          <p class="plan-detalle">Para comerciantes de Binance P2P sin verificación. Pagas una sola vez y la licencia no vence.</p>
+          <a class="boton boton-principal" href="#solicitud" data-plan="ilimitada">Pedir mi licencia</a>
+        </article>
+        <article class="plan proximamente">
+          <div class="plan-cabeza"><h3>Verificados</h3><span class="sello">Próximamente</span></div>
+          <p class="precio"><strong>$100</strong><span>al mes</span></p>
+          <p class="plan-nota">Instalador propio para comerciantes verificados</p>
+          <p class="plan-detalle">Una versión hecha para comerciantes verificados de Binance. Déjanos tus datos y te avisamos al salir.</p>
+          <a class="boton boton-secundario" href="#solicitud" data-plan="verificados">Avísame cuando salga</a>
+        </article>
+      </div>
+      <div class="compra">
+        <div class="compra-texto">
+          <h3>Pide tu licencia o reserva tu puesto</h3>
+          <p>Abre el programa, ve a Ajustes → Licencia y copia el código de tu PC. Déjanos tus datos y te escribimos para el pago. Al pagar te enviamos la licencia para pegar en "Activar licencia".</p>
+          <p class="contacto-directo" id="contacto-directo" hidden>¿Prefieres escribir directo? <strong data-contacto></strong></p>
+        </div>
+        <form class="formulario" id="solicitud" novalidate>
+          <label for="solicitud-nombre">Nombre<input id="solicitud-nombre" name="nombre" required minlength="2" maxlength="80" autocomplete="name"></label>
+          <label for="solicitud-contacto">Telegram, WhatsApp o correo<input id="solicitud-contacto" name="contacto" required minlength="3" maxlength="120" placeholder="@usuario o +58 412…"></label>
+          <label for="solicitud-plan">Plan<select id="solicitud-plan" name="plan">
+            <option value="ilimitada" selected>No verificados · $80 pago único</option><option value="verificados">Verificados · $100 al mes (lista de espera)</option>
+          </select></label>
+          <label for="solicitud-codigo"><span>Código de tu PC <span class="opcional">(opcional)</span></span><input id="solicitud-codigo" name="codigo_pc" maxlength="19" placeholder="ABCD-1234-EFGH-5678" autocomplete="off" spellcheck="false"></label>
+          <label for="solicitud-mensaje" class="ancho"><span>Mensaje <span class="opcional">(opcional)</span></span><textarea id="solicitud-mensaje" name="mensaje" rows="2" maxlength="500"></textarea></label>
+          <div class="ancho fila-enviar"><button class="boton boton-principal" type="submit">Pedir licencia</button><p id="solicitud-aviso" class="aviso" role="status" aria-live="polite"></p></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda banda-alterna" id="preguntas">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Preguntas frecuentes</p>
+        <h2>Lo que más nos preguntan.</h2>
+      </div>
+      <div class="preguntas">
+        <details><summary>¿Qué necesito para usarlo?</summary><p>Una PC con Windows 10 u 11, Google Chrome instalado, una cuenta de Binance y una cuenta en Banesco o Mercantil desde donde se hacen los pagos.</p></details>
+        <details><summary>¿El programa guarda mis contraseñas?</summary><p>No. Tú inicias sesión en el banco y en Binance dentro de la ventana de Chrome del bot. Los códigos de pago se escriben al abrir el programa y se borran al cerrarlo.</p></details>
+        <details><summary>¿Qué pasa si un pago falla?</summary><p>La orden pasa a Revisión, te llega un aviso y la cola sigue con la siguiente. Nada se paga dos veces.</p></details>
+        <details><summary>Windows dice que protegió mi PC. ¿Es seguro?</summary><p>Es el aviso normal de Windows para programas nuevos. Pulsa "Más información" y luego "Ejecutar de todas formas".</p></details>
+        <details><summary>¿Puedo usar la misma licencia en dos PCs?</summary><p>No. Cada licencia va atada al código de una PC. Si cambias de equipo, escríbenos y la pasamos.</p></details>
+        <details><summary>¿Cómo se actualiza?</summary><p>Al abrir, el programa revisa si hay versión nueva y te ofrece actualizar con un clic. No tienes que volver a descargar nada.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda">
+    <div class="envoltura cierre">
+      <p class="etiqueta">Empieza hoy</p>
+      <h2>Que el bot pague mientras tú haces crecer tu negocio.</h2>
+      <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="cierre">Descargar P2PAutoPay</a>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="envoltura">
+    <div class="pie-fila">
+      <a class="marca" href="#inicio"><img src="img/logo.svg" alt="">P2P<b>AutoPay</b></a>
+      <a href="terminos.txt">Términos de uso</a>
+      <a href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases">Todas las versiones</a>
+    </div>
+    <p>P2PAutoPay es una herramienta independiente. No está afiliada a Binance, Banesco ni Mercantil; sus nombres pertenecen a sus dueños. Operar P2P tiene riesgos y cada usuario es responsable de sus operaciones y de cumplir las normas de su banco y de Binance.</p>
+    <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
+  </div>
+</footer>
+<script src="app.js" defer></script>
+
+</body>
+</html>

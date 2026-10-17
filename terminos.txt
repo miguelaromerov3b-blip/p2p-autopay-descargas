@@ -1,0 +1,88 @@
+﻿Términos de uso de P2PAutoPay
+Versión del 15 de octubre de 2026
+
+1. Aceptación
+
+Al instalar, activar o usar P2PAutoPay ("el Programa") aceptas estos Términos de uso. Si no estás de acuerdo, no instales ni uses el Programa. El instalador te pide aceptarlos antes de continuar.
+
+Estos Términos son un acuerdo entre tú ("el Usuario") y el titular de P2PAutoPay ("el Titular"). Si usas el Programa en nombre de una empresa, declaras que tienes poder para aceptarlos por ella.
+
+2. Qué es P2PAutoPay
+
+P2PAutoPay es un programa que corre en tu propia computadora y automatiza tareas que tú harías a mano: leer órdenes de Binance P2P, hacer transferencias desde la sesión bancaria que tú abriste y marcar las órdenes como pagadas.
+
+P2PAutoPay no es:
+
+- una casa de cambio, banco, billetera ni intermediario financiero;
+- un servicio que reciba, guarde o mueva tu dinero: todo pago sale de tus cuentas y por tu orden;
+- asesoría financiera, de inversión ni fiscal. Los precios, cálculos y sugerencias del Programa son informativos;
+- un producto de Binance ni de ningún banco, ni está respaldado o autorizado por ellos. Las marcas citadas pertenecen a sus dueños.
+
+3. Licencia por suscripción
+
+El Titular te da una licencia personal, no exclusiva e intransferible para usar el Programa mientras tu suscripción esté pagada. No compras el Programa: compras el derecho a usarlo.
+
+- Duración. La suscripción es mensual. Vence al final de cada período pagado y se renueva al pagar el siguiente.
+- Al vencer. Si no renuevas, el Programa deja de hacer pagos y de recibir actualizaciones. Tus datos y tu configuración se quedan en tu computadora.
+- Equipos. Cada licencia sirve para el número de computadoras indicado al comprarla. No puedes compartir tu clave de licencia.
+- Precio y pagos. El precio vigente se informa antes de pagar. Los pagos de períodos ya iniciados no se reembolsan, salvo que la ley aplicable diga otra cosa.
+- Suspensión. El Titular puede suspender o cancelar una licencia si se incumplen estos Términos (sección 6).
+
+4. Tus cuentas y tus sesiones
+
+Tú inicias sesión por tu cuenta en tu banco y en Binance, en la ventana del navegador que abre el Programa. P2PAutoPay no recibe, no guarda y no envía tu usuario ni tu contraseña de banco ni de Binance.
+
+Para pagar por ti, el Programa necesita los códigos que tu banco pide en cada transferencia, como la contraseña de operaciones, o el correo donde llega la clave temporal con su contraseña de aplicación. Los escribes tú en el Programa cada vez que lo abres. Quedan solo en la memoria de tu computadora, nunca en el disco ni en servidores del Titular, y se borran al cerrar el Programa.
+
+- Todo lo que el Programa hace en esas sesiones ocurre en tu computadora y con tu autorización. Nada pasa por servidores del Titular.
+- Eres el único responsable de proteger tu computadora, tus sesiones, tus códigos de verificación (2FA, claves temporales) y el acceso físico a tu equipo.
+- Si dejas una sesión abierta, cualquiera con acceso a tu equipo podría usarla. Cierra el Programa y tus sesiones cuando no estés operando.
+- Solo puedes usar cuentas de las que seas titular o para las que tengas autorización expresa y por escrito.
+
+5. Tus responsabilidades
+
+El Programa es una herramienta: las decisiones y sus consecuencias son tuyas. Al usarlo te comprometes a:
+
+1. Supervisar. Revisar con frecuencia las órdenes, los pagos hechos y los que quedan en Revisión, y confirmar en tu banco que cada pago salió bien.
+2. Verificar antes de liberar. Confirmar en tu banco que recibiste el dinero antes de liberar cripto en Binance. El Programa nunca libera fondos por ti.
+3. Cumplir las reglas de terceros. Respetar los términos de Binance, de tus bancos y de cualquier plataforma que uses, incluidas sus reglas sobre automatización. Si alguno lo prohíbe, no uses el Programa con ese servicio.
+4. Cumplir la ley. Cumplir las leyes de tu país sobre cambio de divisas, criptoactivos, prevención de lavado de dinero, verificación de identidad e impuestos.
+5. Configurar bien. Revisar los montos, límites, cuentas y datos que cargas. Un dato mal puesto puede hacer que un pago salga a quien no es o por otro monto.
+
+6. Usos prohibidos
+
+Está prohibido usar el Programa para:
+
+- fraude, estafas, lavado de dinero, financiamiento de actividades ilícitas o cualquier operación con fondos de origen dudoso;
+- operar cuentas de otras personas sin su autorización, o cuentas prestadas, compradas o a nombre de terceros;
+- evadir controles de identidad, límites o verificaciones de Binance, de los bancos o de las autoridades;
+- copiar, revender, alquilar, sublicenciar o compartir el Programa o tu clave de licencia;
+- descompilar, modificar o desactivar el control de licencias, salvo lo que la ley permita expresamente.
+
+Si el Titular detecta uno de estos usos, puede cancelar la licencia sin reembolso y colaborar con las autoridades cuando la ley lo exija.
+
+7. Sin garantías y límite de responsabilidad
+
+El Programa se entrega "tal cual" y "según disponibilidad". El Titular no garantiza que funcione sin errores ni sin interrupciones, ni que siga funcionando si Binance o los bancos cambian sus páginas o sus reglas. Tampoco garantiza ganancias de ningún tipo.
+
+En la medida máxima que permita la ley, el Titular no responde por:
+
+- pagos equivocados, duplicados, incompletos o hechos a destinatarios incorrectos, sea por datos de la orden, de la contraparte, de tu configuración o por fallas del Programa;
+- órdenes vencidas, canceladas, apeladas o disputadas en Binance;
+- bloqueos, restricciones, suspensiones o cierres de tus cuentas de banco, de Binance o de cualquier otro servicio;
+- pérdidas por movimientos del mercado, tasas de cambio, comisiones o decisiones de compra y venta;
+- caídas de internet, de tu computadora, de Binance, de los bancos o de otros servicios;
+- accesos no autorizados a tu equipo o a tus sesiones;
+- lucro cesante, pérdida de datos o cualquier daño indirecto o consecuente.
+
+Si a pesar de lo anterior se determinara alguna responsabilidad del Titular, su monto total no superará lo que hayas pagado por la suscripción en los 3 meses anteriores al hecho.
+
+8. Otras condiciones
+
+- Indemnidad. Te comprometes a mantener indemne al Titular frente a reclamos de terceros causados por tu uso del Programa, por incumplir estos Términos o por violar la ley o derechos de otros.
+- Tus datos. Tus datos de operación (órdenes, pagos, comprobantes, configuración) se guardan solo en tu computadora. Para la licencia, el Titular guarda tu correo, tu clave de licencia, un identificador del equipo y las fechas de pago. No se venden ni se comparten, salvo que la ley lo exija.
+- Actualizaciones. El Programa puede ofrecerte versiones nuevas al abrirse. Algunas pueden ser necesarias para seguir funcionando cuando Binance o los bancos cambien.
+- Terminación. Puedes dejar de usar el Programa cuando quieras. La licencia termina al vencer sin renovar o si el Titular la cancela por incumplimiento.
+- Cambios a estos Términos. El Titular puede actualizarlos. Te los mostrará en el Programa y, si sigues usándolo después, se entienden aceptados.
+- Ley aplicable. Estos Términos se rigen por las leyes de la República Bolivariana de Venezuela. Cualquier disputa se resolverá ante los tribunales competentes de [ciudad].
+- Contacto. [correo de soporte de P2PAutoPay]
