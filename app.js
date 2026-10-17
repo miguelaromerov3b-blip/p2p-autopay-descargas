@@ -96,9 +96,22 @@ async function cargarAjustes() {
     document.querySelectorAll("[data-contacto]").forEach((el) => { el.textContent = ajustes.contacto_ventas; });
     document.getElementById("contacto-directo").hidden = false;
   }
-  if (ajustes.version) {
-    document.querySelectorAll("[data-version]").forEach((el) => { el.textContent = ajustes.version; });
-  }
+}
+
+// Los botones de descarga bajan el instalador directo: se pide a GitHub la ultima
+// version publicada y se pone el enlace del .exe. Si GitHub no responde, el boton
+// sigue llevando a la pagina de la ultima version.
+async function enlazarInstalador() {
+  const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest", {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+  if (!r.ok) throw new Error(`releases: ${r.status}`);
+  const version = await r.json();
+  const exe = (version.assets || []).find((a) => a.name.toLowerCase().endsWith(".exe"));
+  if (!exe) return;
+  document.querySelectorAll("a[data-descarga]").forEach((a) => { a.href = exe.browser_download_url; });
+  const numero = String(version.tag_name || "").replace(/^v/, "");
+  if (numero) document.querySelectorAll("[data-version]").forEach((el) => { el.textContent = numero; });
 }
 
 function contarDescargas() {
@@ -149,4 +162,4 @@ function prepararSolicitud() {
 contarDescargas();
 elegirPlanAlPulsar();
 prepararSolicitud();
-Promise.allSettled([cargarPlanes(), cargarVideos(), cargarAjustes()]);
+Promise.allSettled([enlazarInstalador(), cargarPlanes(), cargarVideos(), cargarAjustes()]);
