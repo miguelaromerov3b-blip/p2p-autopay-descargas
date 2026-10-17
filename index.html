@@ -12,8 +12,8 @@
 <link rel="icon" href="img/logo.svg" type="image/svg+xml">
 <style>
 /* Plan: una sola noche de mesa de operaciones. Fondo oscuro de marca, el naranja del
-   latido solo marca lo que se mueve (pagos, botones, estados). Hero = un recibo de orden
-   que se completa solo; abajo, capacidades, pasos, videos y licencias en bandas. */
+   latido solo marca lo que se mueve (pagos, botones, estados). Hero = una compra real de
+   100 USDT que el bot paga en vivo; abajo, pantallas del programa dibujadas en codigo. */
 @font-face {
   font-family: "Unbounded";
   src: url("fuente/unbounded.woff2") format("woff2");
@@ -31,6 +31,7 @@
   --naranja: #FF7A45;
   --naranja-fuerte: #C2410C;
   --verde: #3ecf8e;
+  --ambar: #f5b544;
   --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
   --texto: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "Cascadia Mono", Consolas, "SFMono-Regular", monospace;
@@ -98,37 +99,173 @@ p { margin: 0; }
 
 /* Hero */
 .hero { padding-block: 72px 56px; }
-.hero .envoltura { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+.hero .envoltura { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; }
 .hero h1 { font-size: clamp(34px, 5.4vw, 60px); letter-spacing: -.01em; }
 .hero h1 em { font-style: normal; color: var(--naranja); }
 .hero .bajada { margin-top: 22px; font-size: 18px; color: var(--crema-suave); max-width: 34em; }
 .acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .nota-descarga { margin-top: 14px; font-size: 13px; color: var(--tenue); font-family: var(--mono); }
 
-/* Recibo de orden: el momento firma de la pagina */
-.recibo {
+/* Escena del hero: una compra real de 100 USDT pagada por el bot, en bucle */
+.escena { position: relative; display: grid; gap: 14px; min-width: 0; }
+.orden {
   background: var(--noche-2); border: 1px solid var(--linea); border-radius: 18px;
-  padding: 22px 22px 18px; font-family: var(--mono); font-size: 13px;
-  box-shadow: 0 30px 80px -40px rgba(255, 122, 69, .35);
-  min-width: 0;
+  padding: 18px; display: grid; gap: 14px; min-width: 0;
+  box-shadow: 0 40px 90px -50px rgba(255, 122, 69, .45);
 }
-.recibo-cabeza { display: flex; justify-content: space-between; gap: 12px; color: var(--tenue); font-size: 12px; }
-.recibo-monto { margin-top: 12px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-.recibo-monto strong { font-family: var(--display); font-size: 30px; font-weight: 600; color: var(--crema); font-variant-numeric: tabular-nums; }
-.recibo-monto span { color: var(--crema-suave); }
-.latido { width: 100%; height: 48px; margin: 14px 0 6px; }
-.latido path { fill: none; stroke: var(--naranja); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 520; stroke-dashoffset: 0; animation: latir 3.2s ease-in-out infinite; }
-@keyframes latir { 0% { stroke-dashoffset: 520; } 45%, 100% { stroke-dashoffset: 0; } }
-.pasos-orden { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.pasos-orden li { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--linea); align-items: center; }
-.pasos-orden time { color: var(--tenue); font-variant-numeric: tabular-nums; }
-.pasos-orden .estado { font-size: 11px; padding: 3px 8px; border-radius: 99px; background: color-mix(in srgb, var(--verde) 16%, transparent); color: var(--verde); white-space: nowrap; }
-.pasos-orden li { animation: aparecer .5s ease both; }
-.pasos-orden li:nth-child(2) { animation-delay: .5s; }
-.pasos-orden li:nth-child(3) { animation-delay: 1s; }
-.pasos-orden li:nth-child(4) { animation-delay: 1.5s; }
-@keyframes aparecer { from { opacity: .25; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
-.recibo-pie { margin-top: 10px; color: var(--tenue); font-size: 11px; }
+.orden-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.orden-titulo { display: grid; gap: 2px; min-width: 0; }
+.orden-tipo { font-family: var(--display); font-weight: 600; font-size: 16px; }
+.orden-num { font-family: var(--mono); font-size: 11px; color: var(--tenue); }
+.chip { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 99px; white-space: nowrap; transition: background .3s, color .3s; }
+.chip-pend { background: color-mix(in srgb, var(--ambar) 16%, transparent); color: var(--ambar); }
+.chip-pago { background: color-mix(in srgb, var(--naranja) 18%, transparent); color: var(--naranja); }
+.chip-ok { background: color-mix(in srgb, var(--verde) 16%, transparent); color: var(--verde); }
+.orden-cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.orden-cifras div { display: grid; gap: 2px; min-width: 0; }
+.orden-cifras small { font-size: 11px; color: var(--tenue); }
+.orden-cifras strong { font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.orden-cifras .total { color: var(--naranja); }
+.orden-pago {
+  position: relative; overflow: hidden; border: 1px solid var(--linea); border-radius: 12px;
+  padding: 10px 12px; display: grid; gap: 8px; background: var(--noche);
+}
+.orden-pago::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 122, 69, .22), transparent);
+  transform: translateX(-100%);
+}
+.orden-pago.leyendo { border-color: var(--naranja); }
+.orden-pago.leyendo::after { opacity: 1; animation: escanear 1.1s ease-in-out; }
+@keyframes escanear { to { transform: translateX(100%); } }
+.vendedor { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--crema-suave); }
+.vendedor b { color: var(--crema); font-weight: 600; }
+.avatar { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; background: var(--noche-3); color: var(--crema); }
+.orden-pago dl { margin: 0; display: grid; grid-template-columns: repeat(3, auto); gap: 4px 14px; justify-content: start; }
+.orden-pago dl div { display: grid; min-width: 0; }
+.orden-pago dt { font-size: 10px; color: var(--tenue); text-transform: uppercase; letter-spacing: .06em; }
+.orden-pago dd { margin: 0; font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+.chat { display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; height: 176px; overflow: hidden; border-top: 1px dashed var(--linea); padding-top: 10px; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px); mask-image: linear-gradient(to bottom, transparent, #000 16px); }
+.nota-escena { font-family: var(--mono); font-size: 11px; color: var(--tenue); text-align: right; }
+.msg { margin: 0; font-size: 12px; transition: opacity .35s ease, transform .35s ease; }
+.chat > .msg:not(.visible) { display: none; }
+.msg.entrando { opacity: 0; transform: translateY(6px); }
+.msg.sistema { align-self: center; color: var(--tenue); background: var(--noche); border-radius: 99px; padding: 4px 12px; text-align: center; }
+.msg.sistema.ok { color: var(--verde); }
+.msg.yo { align-self: flex-end; display: grid; gap: 4px; justify-items: end; }
+.mini-recibo {
+  display: grid; gap: 1px; padding: 8px 12px; border-radius: 10px 10px 2px 10px; min-width: 150px;
+  background: var(--crema); color: var(--noche); font-family: var(--mono); font-size: 11px;
+}
+.mini-recibo span { color: #1d6b45; font-weight: 700; }
+.mini-recibo b { font-size: 14px; }
+.mini-recibo i { font-style: normal; color: #5b6570; }
+.adjunto { font-size: 10px; color: var(--tenue); font-family: var(--mono); }
+.orden-boton {
+  text-align: center; font-family: var(--display); font-weight: 600; font-size: 13px;
+  padding: 11px; border-radius: 10px; background: var(--naranja); color: var(--noche);
+  transition: transform .15s ease, background .3s, color .3s;
+}
+.orden-boton.pulsado { transform: scale(.96); }
+.orden-boton.hecho { background: var(--noche-3); color: var(--tenue); }
+.orden-boton.hecho span::before { content: "✓ "; color: var(--verde); }
+
+.banco {
+  position: absolute; left: 50%; top: 150px; width: min(270px, 80%); z-index: 2;
+  background: var(--crema); color: var(--noche); border-radius: 14px; padding: 14px 16px;
+  display: grid; gap: 4px; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .7);
+  transform: translateX(-50%); transform-origin: center; opacity: 0; visibility: hidden;
+  transition: opacity .35s ease, transform .35s ease, visibility 0s .35s;
+}
+.banco.visible { opacity: 1; visibility: visible; transition: opacity .35s ease, transform .35s ease; }
+.banco.volando { transition: transform .7s cubic-bezier(.6, 0, .3, 1), opacity .7s ease; }
+.banco.flash { animation: flash .45s ease; }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .9); } 100% { box-shadow: 0 0 0 18px rgba(255, 255, 255, 0); } }
+.banco-cabeza { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #1d6b45; }
+.banco-check { opacity: 0; transition: opacity .3s; }
+.banco.exito .banco-check { opacity: 1; }
+.banco strong { font-family: var(--display); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.banco-destino, .banco-ref { font-family: var(--mono); font-size: 11px; color: #5b6570; }
+.progreso { height: 4px; border-radius: 4px; background: #d9d4c8; overflow: hidden; margin-block: 4px; }
+.progreso i { display: block; height: 100%; width: 100%; background: #1d6b45; transform-origin: left; }
+.banco-estado { font-size: 12px; font-weight: 600; }
+.banco:not(.exito) .banco-ref { visibility: hidden; }
+
+.bot { background: var(--noche); border: 1px solid var(--linea); border-radius: 14px; padding: 12px 14px; min-width: 0; }
+.bot-cabeza { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.vivo { font-family: var(--mono); font-size: 10px; color: var(--verde); display: inline-flex; align-items: center; gap: 5px; }
+.vivo::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--verde); animation: latido 1.6s ease-in-out infinite; }
+@keyframes latido { 50% { opacity: .3; } }
+.crono { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--naranja); font-variant-numeric: tabular-nums; }
+.bot-log {
+  list-style: none; margin: 8px 0 0; padding: 0; font-family: var(--mono); font-size: 11.5px;
+  color: var(--crema-suave); height: 7.5em; line-height: 1.5; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.bot-log li { flex-shrink: 0; display: flex; gap: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; animation: linea .3s ease both; }
+.bot-log time { color: var(--tenue); }
+.bot-log li.fin { color: var(--verde); }
+@keyframes linea { from { opacity: 0; transform: translateY(4px); } }
+
+/* Pantallas del programa dibujadas en codigo: nitidas a cualquier tamano */
+.app {
+  display: grid; grid-template-columns: 150px 1fr; min-width: 0;
+  border: 1px solid var(--linea); border-radius: 16px; overflow: hidden; background: var(--noche);
+  box-shadow: 0 40px 80px -45px rgba(0, 0, 0, .9); font-size: 13px;
+}
+.app.app-posicion { grid-template-columns: 1fr; }
+.app-lado { background: #0c131a; border-right: 1px solid var(--linea); padding: 16px 10px; display: grid; gap: 2px; align-content: start; }
+.app-marca { display: flex; align-items: center; gap: 6px; font-family: var(--display); font-weight: 600; font-size: 12px; margin: 0 6px 12px; }
+.app-marca b { color: var(--naranja); font-weight: 600; }
+.app-grupo { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); margin: 10px 8px 4px; }
+.app-item { padding: 6px 8px; border-radius: 8px; color: var(--crema-suave); font-size: 12px; }
+.app-item.activo { background: color-mix(in srgb, var(--naranja) 14%, transparent); color: var(--crema); box-shadow: inset 2px 0 0 var(--naranja); }
+.app-cuerpo { padding: 16px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+.app-titulo { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.app-titulo b { font-family: var(--display); font-weight: 600; font-size: 15px; }
+.pildora { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--crema-suave); border: 1px solid var(--linea); border-radius: 99px; padding: 4px 10px; }
+.pildora i { width: 6px; height: 6px; border-radius: 50%; background: var(--verde); animation: latido 1.6s ease-in-out infinite; }
+.app-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.app-tiles div { border: 1px solid var(--linea); border-radius: 10px; padding: 10px; display: grid; background: var(--noche-2); }
+.app-tiles strong { font-family: var(--display); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.app-tiles small { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.app-tiles .tile-vivo { border-color: var(--naranja-fuerte); }
+.app-tiles .tile-vivo strong { color: var(--naranja); }
+.app-tabla { overflow-x: auto; border: 1px solid var(--linea); border-radius: 10px; }
+.app table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+.app th { text-align: left; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); font-weight: 600; padding: 8px 10px; background: var(--noche-2); }
+.app td { padding: 8px 10px; border-top: 1px solid var(--linea); white-space: nowrap; font-family: var(--mono); font-size: 11.5px; }
+.app .num { text-align: right; }
+.fila-viva td { background: color-mix(in srgb, var(--naranja) 7%, transparent); }
+.estado { font-family: var(--texto); font-size: 10.5px; padding: 2px 8px; border-radius: 99px; }
+.e-pend { background: color-mix(in srgb, var(--ambar) 16%, transparent); color: var(--ambar); }
+.e-proc { background: color-mix(in srgb, var(--naranja) 18%, transparent); color: var(--naranja); animation: latido 1.6s ease-in-out infinite; }
+.e-ok { background: color-mix(in srgb, var(--verde) 14%, transparent); color: var(--verde); }
+.app-pestanas { display: flex; gap: 18px; border-bottom: 1px solid var(--linea); font-size: 12px; color: var(--tenue); }
+.app-pestanas span { padding-bottom: 8px; }
+.app-pestanas .activo { color: var(--crema); box-shadow: inset 0 -2px 0 var(--naranja); }
+.posicion-rejilla { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; }
+.libro, .calc { border: 1px solid var(--linea); border-radius: 12px; padding: 12px; background: var(--noche-2); min-width: 0; }
+.libro-cabeza { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); margin-bottom: 6px; }
+.libro ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.libro li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 12px; }
+.libro li span { font-family: var(--mono); color: var(--tenue); }
+.libro li b { font-weight: 500; color: var(--crema-suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.libro li em { font-style: normal; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.libro li.tuyo { background: color-mix(in srgb, var(--naranja) 14%, transparent); box-shadow: inset 2px 0 0 var(--naranja); }
+.libro li.tuyo b, .libro li.tuyo em { color: var(--crema); font-weight: 600; }
+.libro-pie { margin-top: 8px; font-size: 11px; color: var(--verde); font-family: var(--mono); }
+.calc { display: grid; gap: 10px; align-content: start; }
+.calc-cabeza { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.calc dl { margin: 0; display: grid; gap: 4px; }
+.calc dl div { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.calc dt { color: var(--crema-suave); }
+.calc dd { margin: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.calc-total { border-top: 1px dashed var(--linea); padding-top: 10px; display: grid; gap: 2px; }
+.calc-total small { font-size: 11px; color: var(--tenue); }
+.calc-total strong { font-family: var(--display); font-size: 22px; font-weight: 600; color: var(--verde); }
+.calc-total span { font-family: var(--mono); font-size: 11px; color: var(--crema-suave); }
+.nota-ejemplo { margin-top: 28px; font-size: 12px; color: var(--tenue); font-family: var(--mono); }
 
 /* Bandas */
 .banda { padding-block: 84px; border-top: 1px solid var(--linea); }
@@ -146,9 +283,9 @@ p { margin: 0; }
 .capacidad ul { margin: 4px 0 0; padding-left: 18px; color: var(--crema-suave); font-size: 14px; display: grid; gap: 4px; }
 
 /* Capturas */
-.captura { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: center; }
+.captura { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: center; }
 .captura + .captura { margin-top: 72px; }
-.captura.invertida { grid-template-columns: 1.1fr .9fr; }
+.captura.invertida { grid-template-columns: 1.2fr .8fr; }
 .captura.invertida .captura-texto { order: 2; }
 .captura-texto { display: grid; gap: 14px; min-width: 0; }
 .captura-texto h3 { font-size: 24px; }
@@ -248,6 +385,9 @@ a.video:hover .reproducir { transform: scale(1.06); }
 @media (max-width: 960px) {
   .hero .envoltura, .captura, .captura.invertida { grid-template-columns: 1fr; gap: 36px; }
   .captura.invertida .captura-texto { order: 0; }
+  .app { grid-template-columns: 1fr; }
+  .app-lado { display: none; }
+  .posicion-rejilla { grid-template-columns: 1fr; }
   .capacidades { grid-template-columns: repeat(2, 1fr); }
   .pasos { grid-template-columns: repeat(2, 1fr); }
   .menu { display: none; }
@@ -262,8 +402,10 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .vitrina { grid-template-columns: 1fr; padding: 24px; }
   .compra { padding: 22px; }
   .formulario { grid-template-columns: 1fr; }
-  .pasos-orden li { grid-template-columns: 58px 1fr; }
-  .pasos-orden .estado { grid-column: 2; justify-self: start; }
+  .app-tiles { grid-template-columns: repeat(2, 1fr); }
+  .app .opc { display: none; }
+  .orden-pago dl { grid-template-columns: repeat(2, auto); }
+  .orden-cifras strong { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -299,22 +441,68 @@ a.video:hover .reproducir { transform: scale(1.06); }
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
             Descargar para Windows
           </a>
-          <a class="boton boton-secundario" href="#videos">Ver cómo funciona</a>
+          <a class="boton boton-secundario" href="#como-funciona">Cómo funciona</a>
         </div>
         <p class="nota-descarga">Versión <span data-version>1.1.1</span> · gratis para probar · se actualiza solo</p>
       </div>
 
-      <div class="recibo" aria-label="Ejemplo de una orden pagada por el bot">
-        <div class="recibo-cabeza"><span>ORDEN DE COMPRA · EJEMPLO</span><span>Banesco → Banesco</span></div>
-        <div class="recibo-monto"><strong>1.078,75 Bs</strong><span>25 USDT × 43,15</span></div>
-        <svg class="latido" viewBox="0 0 400 48" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 H150 L170 8 L196 44 L214 30 H400"/></svg>
-        <ol class="pasos-orden">
-          <li><time>14:02:07</time><span>Orden detectada en Binance</span><span class="estado">vista</span></li>
-          <li><time>14:02:41</time><span>Transferencia hecha en el banco</span><span class="estado">pagada</span></li>
-          <li><time>14:02:44</time><span>Comprobante capturado</span><span class="estado">guardado</span></li>
-          <li><time>14:02:48</time><span>Subido y marcado como pagado</span><span class="estado">listo</span></li>
-        </ol>
-        <p class="recibo-pie">Si algo falla, la orden queda en Revisión y la cola sigue.</p>
+      <div class="escena" id="escena" role="img" aria-label="Ejemplo animado: P2PAutoPay paga una compra de 100 USDT por Banesco, envía el comprobante al vendedor y marca la orden como pagada.">
+        <div class="orden" aria-hidden="true">
+          <div class="orden-cabeza">
+            <div class="orden-titulo"><span class="orden-tipo">Comprar USDT</span><span class="orden-num">Binance P2P · Orden 2208419307</span></div>
+            <span class="chip chip-ok" data-chip>Completada</span>
+          </div>
+          <div class="orden-cifras">
+            <div><small>Recibes</small><strong>100 USDT</strong></div>
+            <div><small>Precio</small><strong>43,15 Bs</strong></div>
+            <div><small>Total a pagar</small><strong class="total">4.315,00 Bs</strong></div>
+          </div>
+          <div class="orden-pago" data-pago>
+            <div class="vendedor"><span class="avatar">MR</span><span><b>Mariana_R</b> te vende</span></div>
+            <dl>
+              <div><dt>Banco</dt><dd>Banesco</dd></div>
+              <div><dt>Cuenta</dt><dd>0134 •••• 5521</dd></div>
+              <div><dt>Cédula</dt><dd>V-1•.•••.482</dd></div>
+            </dl>
+          </div>
+          <div class="chat" data-chat>
+            <p class="msg sistema visible" data-msg="0">Orden creada. Tienes 15:00 min para pagar.</p>
+            <div class="msg yo imagen visible" data-msg="5">
+              <div class="mini-recibo"><span>Banesco</span><b>4.315,00 Bs</b><i>Ref. 0047381925</i></div>
+              <span class="adjunto">comprobante.png</span>
+            </div>
+            <p class="msg sistema visible" data-msg="6">Marcaste la orden como pagada.</p>
+            <p class="msg sistema ok visible" data-msg="7">Mariana_R liberó 100 USDT a tu billetera.</p>
+          </div>
+          <div class="orden-boton hecho" data-boton><span>Transferido, notificar al vendedor</span></div>
+        </div>
+
+        <div class="banco" data-banco aria-hidden="true">
+          <div class="banco-cabeza"><span>Banesco · Transferencia</span><span class="banco-check">✓</span></div>
+          <strong>4.315,00 Bs</strong>
+          <p class="banco-destino">A Mariana R. · 0134 •••• 5521</p>
+          <div class="progreso"><i data-progreso></i></div>
+          <p class="banco-estado" data-banco-estado>Transferencia exitosa</p>
+          <p class="banco-ref">Ref. 0047381925</p>
+        </div>
+
+        <div class="bot" aria-hidden="true">
+          <div class="bot-cabeza">
+            <img src="img/logo.svg" alt="" width="18" height="18">
+            <b>P2PAutoPay</b><span class="vivo">trabajando</span>
+            <span class="crono" data-crono>00:38</span>
+          </div>
+          <ol class="bot-log" data-log>
+            <li><time>00:00</time>Nueva orden: comprar 100 USDT a 43,15</li>
+            <li><time>00:02</time>Datos de pago leídos: Banesco ••5521</li>
+            <li><time>00:03</time>Pagando 4.315,00 Bs por Banesco</li>
+            <li><time>00:31</time>Pago hecho. Ref. 0047381925</li>
+            <li><time>00:33</time>Comprobante capturado</li>
+            <li><time>00:36</time>Comprobante enviado al vendedor</li>
+            <li class="fin"><time>00:38</time>Orden marcada como pagada</li>
+          </ol>
+        </div>
+        <p class="nota-escena">Ejemplo con datos ficticios</p>
       </div>
     </div>
   </section>
@@ -370,18 +558,81 @@ a.video:hover .reproducir { transform: scale(1.06); }
         <div class="captura-texto">
           <p class="etiqueta">Cola de pagos</p>
           <h3>Ves cada orden y en qué va.</h3>
-          <p>Pendiente, procesando, revisión, completada. Cada pago queda con su referencia y su comprobante, listo para tu contabilidad.</p>
+          <p>Las órdenes se pagan una tras otra, en el orden en que llegan. Cada pago queda con su referencia y su comprobante, listo para tu contabilidad. Si una falla, pasa a Revisión y la cola sigue.</p>
         </div>
-        <div class="marco"><div class="marco-barra"><i></i><i></i><i></i></div><img src="img/cola.png" alt="Pantalla de la cola de pagos de P2PAutoPay" loading="lazy" width="1320" height="840"></div>
+        <div class="app" aria-label="Pantalla de la cola de pagos de P2PAutoPay (ejemplo)" role="img">
+          <aside class="app-lado" aria-hidden="true">
+            <div class="app-marca"><img src="img/logo.svg" alt="" width="20" height="20">P2P<b>AutoPay</b></div>
+            <span class="app-grupo">Pagos</span>
+            <span class="app-item">Arranque</span>
+            <span class="app-item activo">Cola</span>
+            <span class="app-item">Nueva orden</span>
+            <span class="app-item">Revisión</span>
+            <span class="app-grupo">Binance</span>
+            <span class="app-item">Vigilante</span>
+            <span class="app-item">Posicionamiento</span>
+          </aside>
+          <div class="app-cuerpo" aria-hidden="true">
+            <div class="app-titulo"><b>Cola de pagos</b><span class="pildora"><i></i>Sesión activa · Banesco</span></div>
+            <div class="app-tiles">
+              <div><strong>2</strong><small>Pendiente</small></div>
+              <div class="tile-vivo"><strong>1</strong><small>Procesando</small></div>
+              <div><strong>0</strong><small>Revisión</small></div>
+              <div><strong>46</strong><small>Completada</small></div>
+            </div>
+            <div class="app-tabla">
+              <table>
+                <thead><tr><th>#</th><th>Estado</th><th class="num">Bs</th><th class="opc">Ref. pago</th><th>Hora</th></tr></thead>
+                <tbody>
+                  <tr><td>419</td><td><span class="estado e-pend">Pendiente</span></td><td class="num">6.472,50</td><td class="opc">–</td><td>21:15</td></tr>
+                  <tr class="fila-viva"><td>418</td><td><span class="estado e-proc">Procesando</span></td><td class="num">4.315,00</td><td class="opc">–</td><td>21:14</td></tr>
+                  <tr><td>417</td><td><span class="estado e-ok">Completada</span></td><td class="num">2.157,50</td><td class="opc">0047380112</td><td>21:09</td></tr>
+                  <tr><td>416</td><td><span class="estado e-ok">Completada</span></td><td class="num">8.630,00</td><td class="opc">0047377281</td><td>20:58</td></tr>
+                  <tr><td>415</td><td><span class="estado e-ok">Completada</span></td><td class="num">1.294,50</td><td class="opc">0047375530</td><td>20:41</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="captura invertida">
         <div class="captura-texto">
           <p class="etiqueta">Posicionamiento</p>
-          <h3>Saca la cuenta antes de mover tu capital.</h3>
-          <p>Pon tu precio de compra y de venta, tu nivel de comerciante y tus ciclos. La calculadora te dice cuánto queda después de comisiones, en USDT y en bolívares.</p>
+          <h3>Sabes en qué puesto está tu anuncio y cuánto te deja.</h3>
+          <p>El vigía lee el libro de Binance en vivo y te dice en qué puesto quedó tu anuncio. La calculadora te muestra lo que queda de cada ciclo después de comisiones, en USDT y en bolívares.</p>
         </div>
-        <div class="marco"><div class="marco-barra"><i></i><i></i><i></i></div><img src="img/posicionamiento.png" alt="Calculadora de ciclos del posicionamiento de P2PAutoPay" loading="lazy" width="1320" height="840"></div>
+        <div class="app app-posicion" aria-label="Pantalla del posicionamiento de P2PAutoPay (ejemplo)" role="img">
+          <div class="app-cuerpo" aria-hidden="true">
+            <div class="app-titulo"><b>Posicionamiento</b><span class="pildora"><i></i>Leyendo Binance P2P</span></div>
+            <div class="app-pestanas"><span class="activo">Puesto</span><span>Estrategias</span><span>Calculadora</span></div>
+            <div class="posicion-rejilla">
+              <div class="libro">
+                <div class="libro-cabeza"><span>Compra USDT · Banesco</span><span>Bs</span></div>
+                <ol>
+                  <li><span>1</span><b>ventas_rapidas</b><em>43,18</em></li>
+                  <li class="tuyo"><span>2</span><b>Tu anuncio</b><em>43,15</em></li>
+                  <li><span>3</span><b>JoseCambios</b><em>43,12</em></li>
+                  <li><span>4</span><b>usdt.caracas</b><em>43,10</em></li>
+                  <li><span>5</span><b>DivisasYA</b><em>43,05</em></li>
+                </ol>
+                <p class="libro-pie">Puesto 2 · dentro del top 3</p>
+              </div>
+              <div class="calc">
+                <div class="calc-cabeza">Un ciclo con 1.000 USDT</div>
+                <dl>
+                  <div><dt>Compras a</dt><dd>43,15 Bs</dd></div>
+                  <div><dt>Vendes a</dt><dd>43,50 Bs</dd></div>
+                  <div><dt>Brecha</dt><dd>0,81 %</dd></div>
+                  <div><dt>Comisiones</dt><dd>−0,50 %</dd></div>
+                </dl>
+                <div class="calc-total"><small>Te queda</small><strong>+3,10 USDT</strong><span>≈ 135 Bs por ciclo</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      <p class="nota-ejemplo">Pantallas de ejemplo con datos ficticios.</p>
     </div>
   </section>
 
@@ -525,7 +776,8 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
   </div>
 </footer>
-<script src="app.js?v=2" defer></script>
+<script src="app.js?v=3" defer></script>
+<script src="escena.js?v=2" defer></script>
 
 </body>
 </html>
