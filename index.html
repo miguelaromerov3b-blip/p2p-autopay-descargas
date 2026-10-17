@@ -321,6 +321,22 @@ p { margin: 0; }
 .pasos h3 { font-size: 17px; }
 .pasos p { color: var(--crema-suave); font-size: 15px; }
 
+/* Requisitos */
+.requisitos { display: grid; grid-template-columns: 1.35fr .65fr; gap: 24px; align-items: start; }
+.tabla-requisitos { overflow-x: auto; border: 1px solid var(--linea); border-radius: 16px; min-width: 0; }
+.tabla-requisitos table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.tabla-requisitos th, .tabla-requisitos td { text-align: left; padding: 14px 18px; border-top: 1px solid var(--linea); vertical-align: top; }
+.tabla-requisitos thead th { border-top: 0; background: var(--noche-2); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--crema-suave); font-weight: 500; }
+.tabla-requisitos thead .col-reco { color: var(--naranja); }
+.tabla-requisitos tbody th { font-weight: 600; color: var(--crema); white-space: nowrap; width: 1%; }
+.tabla-requisitos td { color: var(--crema-suave); }
+.tabla-requisitos td:last-child { color: var(--crema); }
+.oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.consejos { border: 1px solid var(--naranja-fuerte); border-radius: 16px; padding: 22px; background: linear-gradient(160deg, rgba(194, 65, 12, .16), transparent 70%); display: grid; gap: 14px; }
+.consejos h3 { font-size: 17px; }
+.consejos ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; font-size: 14px; color: var(--crema-suave); }
+.consejos b { color: var(--crema); font-weight: 600; display: block; }
+
 /* Videos */
 .videos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
 .video { display: grid; gap: 12px; text-decoration: none; color: inherit; min-width: 0; }
@@ -350,7 +366,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .planes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .plan { border: 1px solid var(--linea); border-radius: 18px; padding: 30px 28px; display: grid; gap: 12px; align-content: start; background: var(--noche); min-width: 0; }
 .plan.destacado { border-color: var(--naranja); box-shadow: 0 30px 70px -45px rgba(255, 122, 69, .5); }
-.plan.proximamente { background: var(--noche-2); }
+.plan.proximamente { background: var(--noche-3); }
 .plan.proximamente .precio strong { color: var(--crema-suave); }
 .plan-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .plan h3 { font-size: 20px; }
@@ -364,7 +380,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .como-licencia { margin-top: 28px; color: var(--crema-suave); font-size: 15px; max-width: 52em; }
 
 /* Pedido de licencia */
-.compra { margin-top: 36px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; border: 1px solid var(--linea); border-radius: 18px; padding: 32px; background: var(--noche-2); }
+.compra { margin-top: 36px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; border: 1px solid var(--linea); border-radius: 18px; padding: 32px; background: var(--noche); }
 .compra-texto { display: grid; gap: 12px; align-content: start; min-width: 0; }
 .compra-texto h3 { font-size: 22px; }
 .compra-texto p { color: var(--crema-suave); font-size: 15px; }
@@ -388,7 +404,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 
 /* Preguntas */
 .preguntas { display: grid; gap: 10px; max-width: 52em; }
-.preguntas details { border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; background: var(--noche); }
+.preguntas details { border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; background: var(--noche-2); }
 .preguntas summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
 .preguntas summary::after { content: "+"; color: var(--naranja); font-family: var(--mono); font-size: 18px; line-height: 1; }
 .preguntas details[open] summary::after { content: "−"; }
@@ -407,6 +423,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .captura.invertida .captura-texto { order: 0; }
   .app { grid-template-columns: 1fr; }
   .bancos-fila { grid-template-columns: 1fr; gap: 28px; }
+  .requisitos { grid-template-columns: 1fr; }
   .app-lado { display: none; }
   .posicion-rejilla { grid-template-columns: 1fr; }
   .capacidades { grid-template-columns: repeat(2, 1fr); }
@@ -425,6 +442,9 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .formulario { grid-template-columns: 1fr; }
   .app-tiles { grid-template-columns: repeat(2, 1fr); }
   .bancos-lista { grid-template-columns: 1fr; }
+  .tabla-requisitos table { font-size: 13px; }
+  .tabla-requisitos th, .tabla-requisitos td { padding: 10px 12px; }
+  .tabla-requisitos tbody th { white-space: normal; }
   .app .opc { display: none; }
   .orden-pago dl { grid-template-columns: repeat(2, auto); }
   .orden-cifras strong { font-size: 13px; }
@@ -465,7 +485,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
           </a>
           <a class="boton boton-secundario" href="#como-funciona">Cómo funciona</a>
         </div>
-        <p class="nota-descarga">Versión <span data-version>1.1.1</span> · gratis para probar · se actualiza solo</p>
+        <p class="nota-descarga">Versión <span data-version>1.1.1</span> · Windows 10/11 · 4 GB RAM · <a href="#requisitos">requisitos</a></p>
       </div>
 
       <div class="escena" id="escena" role="img" aria-label="Ejemplo animado: P2PAutoPay paga una compra de 100 USDT por Banesco, envía el comprobante al vendedor y marca la orden como pagada.">
@@ -707,7 +727,42 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda" id="videos">
+  <section class="banda" id="requisitos">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Requisitos</p>
+        <h2>Funciona en la PC que ya tienes.</h2>
+        <p>P2PAutoPay es un programa ligero, pensado para las computadoras de oficina que se consiguen en Venezuela. No necesita tarjeta de video ni una PC gamer.</p>
+      </div>
+      <div class="requisitos">
+        <div class="tabla-requisitos">
+          <table>
+            <thead><tr><th scope="col"><span class="oculto">Componente</span></th><th scope="col">Mínimo</th><th scope="col" class="col-reco">Recomendado</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Sistema</th><td>Windows 10 de 64 bits</td><td>Windows 10 u 11 de 64 bits</td></tr>
+                <tr><th scope="row">Procesador</th><td>2 núcleos (Core i3 de 4.ª gen., Pentium G o AMD A6)</td><td>4 núcleos (Core i5 o Ryzen 3 en adelante)</td></tr>
+                <tr><th scope="row">Memoria RAM</th><td>4 GB</td><td>8 GB</td></tr>
+                <tr><th scope="row">Disco</th><td>2 GB libres</td><td>2 GB libres en un disco SSD</td></tr>
+                <tr><th scope="row">Internet</th><td>2 Mbps estables</td><td>5 Mbps o más, con respaldo</td></tr>
+                <tr><th scope="row">Navegador</th><td>Google Chrome instalado</td><td>Google Chrome al día</td></tr>
+                <tr><th scope="row">Pantalla</th><td>1366 × 768</td><td>1920 × 1080</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="consejos">
+          <h3>Consejos para Venezuela</h3>
+          <ul>
+            <li><b>Un UPS pequeño.</b> Si se va la luz en medio de un pago, al volver la orden queda en Revisión para que la verifiques y no se paga dos veces. Con un UPS, el bot termina el pago sin pararse.</li>
+            <li><b>Internet de respaldo.</b> Comparte los datos del teléfono si se cae el de la casa: el bot sigue apenas vuelve la conexión.</li>
+            <li><b>Con 4 GB, cierra lo que no uses.</b> El bot usa Chrome para el banco y Binance; deja abiertos solo esos.</li>
+            <li><b>Mejor un SSD que más RAM.</b> Si vas a mejorar algo, un disco SSD es lo que más se nota y es de lo más barato.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda banda-alterna" id="videos">
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Videos</p>
@@ -739,7 +794,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda banda-alterna">
+  <section class="banda">
     <div class="envoltura">
       <div class="vitrina">
         <div>
@@ -752,7 +807,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda" id="licencias">
+  <section class="banda banda-alterna" id="licencias">
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Licencias</p>
@@ -795,14 +850,14 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda banda-alterna" id="preguntas">
+  <section class="banda" id="preguntas">
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Preguntas frecuentes</p>
         <h2>Lo que más nos preguntan.</h2>
       </div>
       <div class="preguntas">
-        <details><summary>¿Qué necesito para usarlo?</summary><p>Una PC con Windows 10 u 11, Google Chrome instalado, una cuenta de Binance y una cuenta en Banesco o Mercantil desde donde se hacen los pagos.</p></details>
+        <details><summary>¿Qué necesito para usarlo?</summary><p>Una PC con Windows 10 u 11 de 64 bits y 4 GB de RAM, Google Chrome instalado, una cuenta de Binance y una cuenta en Banesco o Mercantil desde donde se hacen los pagos. Mira los <a href="#requisitos">requisitos completos</a>.</p></details>
         <details><summary>¿El programa guarda mis contraseñas?</summary><p>No. Tú inicias sesión en el banco y en Binance dentro de la ventana de Chrome del bot. Los códigos de pago se escriben al abrir el programa y se borran al cerrarlo.</p></details>
         <details><summary>¿Qué pasa si un pago falla?</summary><p>La orden pasa a Revisión, te llega un aviso y la cola sigue con la siguiente. Nada se paga dos veces.</p></details>
         <details><summary>Windows dice que protegió mi PC. ¿Es seguro?</summary><p>Es el aviso normal de Windows para programas nuevos. Pulsa "Más información" y luego "Ejecutar de todas formas".</p></details>
@@ -812,7 +867,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda">
+  <section class="banda banda-alterna">
     <div class="envoltura cierre">
       <p class="etiqueta">Empieza hoy</p>
       <h2>Que el bot pague mientras tú haces crecer tu negocio.</h2>
