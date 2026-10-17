@@ -276,9 +276,11 @@ p { margin: 0; }
 .bancos-texto p:last-child { color: var(--crema-suave); }
 .bancos-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .banco-tarjeta { border: 1px solid var(--linea); border-radius: 18px; padding: 18px; display: grid; gap: 16px; align-content: start; background: var(--noche-2); min-width: 0; }
-.banco-logo { height: 84px; border-radius: 12px; background: #ffffff; display: grid; place-items: center; padding: 14px 18px; }
-.banco-logo img { max-height: 56px; width: auto; max-width: 100%; object-fit: contain; }
-.logo-texto { font-family: var(--display); font-weight: 700; font-size: 24px; color: #101820; letter-spacing: -.01em; }
+.banco-logo { height: 112px; border-radius: 12px; background: var(--noche); border: 1px solid var(--linea); display: grid; place-items: center; padding: 18px; }
+.banco-logo img { width: auto; max-width: 100%; height: auto; opacity: .92; transition: opacity .2s; }
+.banco-tarjeta:hover .banco-logo img { opacity: 1; }
+.logo-banesco { max-height: 70px; }
+.logo-mercantil { max-height: 50px; }
 .banco-info { display: grid; gap: 8px; }
 .banco-info h3 { font-size: 17px; }
 .banco-info ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--crema-suave); }
@@ -537,9 +539,8 @@ a.video:hover .reproducir { transform: scale(1.06); }
         </div>
         <div class="bancos-lista">
           <article class="banco-tarjeta">
-            <div class="banco-logo" data-banco-logo="banesco"><span class="logo-texto">Banesco</span></div>
+            <div class="banco-logo"><img src="img/banesco.png" alt="Banesco" width="288" height="179" class="logo-banesco"></div>
             <div class="banco-info">
-              <h3>Banesco</h3>
               <ul>
                 <li>Paga por BanescOnline</li>
                 <li>Comprobante de cada pago</li>
@@ -548,9 +549,8 @@ a.video:hover .reproducir { transform: scale(1.06); }
             </div>
           </article>
           <article class="banco-tarjeta">
-            <div class="banco-logo" data-banco-logo="mercantil"><span class="logo-texto">Mercantil</span></div>
+            <div class="banco-logo"><img src="img/mercantil.png" alt="Mercantil Banco Universal" width="642" height="170" class="logo-mercantil"></div>
             <div class="banco-info">
-              <h3>Mercantil</h3>
               <ul>
                 <li>Paga por Mercantil en Línea</li>
                 <li>Lee la clave OTP de tu correo</li>
