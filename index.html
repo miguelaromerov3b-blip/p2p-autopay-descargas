@@ -106,11 +106,21 @@ p { margin: 0; }
 .hero .bajada { margin-top: 22px; font-size: 18px; color: var(--crema-suave); max-width: 34em; }
 .acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .nota-descarga { margin-top: 14px; font-size: 13px; color: var(--tenue); font-family: var(--mono); }
-.contador { margin-top: 10px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--tenue); font-family: var(--mono); }
-.contador strong { color: var(--crema); font-weight: 600; font-variant-numeric: tabular-nums; }
-.contador svg { color: var(--naranja); }
-.cierre .contador { margin-top: 0; }
-.contador[hidden] { display: none; }
+/* Contador publico de descargas: prueba social bajo el boton */
+.impulso { margin-top: 22px; max-width: 30em; padding: 16px 18px; border: 1px solid var(--linea); border-radius: 14px; background: linear-gradient(120deg, rgba(255, 122, 69, .10), transparent 70%); display: grid; gap: 8px; }
+.en-vivo { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--verde); }
+.punto { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); box-shadow: 0 0 0 0 rgba(62, 207, 142, .6); animation: latido 2s ease-out infinite; flex-shrink: 0; }
+@keyframes latido { 0% { box-shadow: 0 0 0 0 rgba(62, 207, 142, .55); } 70%, 100% { box-shadow: 0 0 0 9px rgba(62, 207, 142, 0); } }
+.impulso-cifra { display: flex; align-items: center; gap: 12px; }
+.impulso-cifra strong { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--naranja); font-variant-numeric: tabular-nums; transition: transform .25s ease; }
+.impulso-cifra strong.sube { transform: scale(1.18); }
+.impulso-cifra span { font-family: var(--mono); font-size: 12px; line-height: 1.35; color: var(--crema-suave); text-transform: uppercase; letter-spacing: .06em; }
+.impulso-texto { font-size: 14px; color: var(--crema-suave); }
+.impulso-texto b { color: var(--crema); font-weight: 600; }
+.contador { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: var(--crema-suave); }
+.contador strong { color: var(--naranja); font-variant-numeric: tabular-nums; }
+.impulso[hidden], .contador[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .punto { animation: none; } }
 
 /* Escena del hero: una compra real de 100 USDT pagada por el bot, en bucle */
 .escena { position: relative; display: grid; gap: 14px; min-width: 0; }
@@ -490,8 +500,12 @@ a.video:hover .reproducir { transform: scale(1.06); }
           </a>
           <a class="boton boton-secundario" href="#como-funciona">Cómo funciona</a>
         </div>
-        <p class="nota-descarga">Versión <span data-version>1.1.1</span> · Windows 10/11 · 4 GB RAM · <a href="#requisitos">requisitos</a></p>
-        <p class="contador" data-contador hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg><strong data-descargas></strong> descargas del instalador</p>
+        <p class="nota-descarga">Gratis para probar · Versión <span data-version>1.4.0</span></p>
+        <div class="impulso" data-contador hidden>
+          <span class="en-vivo"><span class="punto" aria-hidden="true"></span>En vivo</span>
+          <p class="impulso-cifra"><strong data-descargas>0</strong><span>descargas<br>y contando</span></p>
+          <p class="impulso-texto" data-impulso>Únete a los traders P2P que ya dejaron de pagar a mano. <b>Sé la descarga número <span data-siguiente></span>.</b></p>
+        </div>
       </div>
 
       <div class="escena" id="escena" role="img" aria-label="Ejemplo animado: P2PAutoPay paga una compra de 100 USDT por Banesco, envía el comprobante al vendedor y marca la orden como pagada.">
@@ -878,7 +892,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
       <p class="etiqueta">Empieza hoy</p>
       <h2>Que el bot pague mientras tú haces crecer tu negocio.</h2>
       <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="cierre">Descargar P2PAutoPay</a>
-      <p class="contador" data-contador hidden>Ya van <strong data-descargas></strong> descargas.</p>
+      <p class="contador" data-contador hidden><span class="punto" aria-hidden="true"></span><span data-impulso>Ya van <strong data-descargas>0</strong> descargas. Sé la número <span data-siguiente></span>.</span></p>
     </div>
   </section>
 </main>
@@ -894,7 +908,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
   </div>
 </footer>
-<script src="app.js?v=4" defer></script>
+<script src="app.js?v=5" defer></script>
 <script src="escena.js?v=2" defer></script>
 
 </body>

@@ -116,23 +116,57 @@ async function enlazarInstalador() {
 
 // Total publico de descargas: suma lo que GitHub cuenta de cada .exe publicado,
 // en todas las versiones. Si GitHub no responde, el contador queda escondido.
+let totalDescargas = 0;
+
+function pintarDescargas(total, animar) {
+  const siguiente = (total + 1).toLocaleString("es-VE");
+  document.querySelectorAll("[data-siguiente]").forEach((el) => { el.textContent = siguiente; });
+  const cifras = document.querySelectorAll("[data-descargas]");
+  const poner = (n) => cifras.forEach((el) => { el.textContent = n.toLocaleString("es-VE"); });
+  if (!animar || matchMedia("(prefers-reduced-motion: reduce)").matches) { poner(total); return; }
+  const inicio = performance.now();
+  const paso = (ahora) => {
+    const t = Math.min(1, (ahora - inicio) / 1200);
+    poner(Math.round(total * (1 - (1 - t) ** 3)));
+    if (t < 1) requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+}
+
 async function mostrarTotalDescargas() {
   const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases?per_page=100", {
     headers: { Accept: "application/vnd.github+json" },
   });
   if (!r.ok) throw new Error(`descargas: ${r.status}`);
   const versiones = await r.json();
-  const total = versiones.flatMap((v) => v.assets || [])
+  totalDescargas = versiones.flatMap((v) => v.assets || [])
     .filter((a) => a.name.toLowerCase().endsWith(".exe"))
     .reduce((suma, a) => suma + (a.download_count || 0), 0);
-  if (!total) return;
-  document.querySelectorAll("[data-descargas]").forEach((el) => { el.textContent = total.toLocaleString("es-VE"); });
+  if (!totalDescargas) return;
   document.querySelectorAll("[data-contador]").forEach((el) => { el.hidden = false; });
+  pintarDescargas(totalDescargas, true);
+}
+
+// Al pulsar Descargar, el contador suma la descarga del visitante y le da la bienvenida.
+let yaSumada = false;
+function sumarMiDescarga() {
+  if (yaSumada || !totalDescargas) return;
+  yaSumada = true;
+  totalDescargas += 1;
+  pintarDescargas(totalDescargas, false);
+  document.querySelectorAll("[data-impulso]").forEach((el) => {
+    el.textContent = `¡Bienvenido! Eres la descarga número ${totalDescargas.toLocaleString("es-VE")}.`;
+  });
+  document.querySelectorAll("[data-descargas]").forEach((el) => {
+    el.classList.add("sube");
+    setTimeout(() => el.classList.remove("sube"), 300);
+  });
 }
 
 function contarDescargas() {
   document.querySelectorAll("a[data-descarga]").forEach((a) => {
     a.addEventListener("click", () => {
+      sumarMiDescarga();
       insertar("web_descargas", { origen: a.dataset.descarga }, { keepalive: true }).catch(() => {});
     });
   });
