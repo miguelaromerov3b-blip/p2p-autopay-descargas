@@ -114,6 +114,22 @@ async function enlazarInstalador() {
   if (numero) document.querySelectorAll("[data-version]").forEach((el) => { el.textContent = numero; });
 }
 
+// Total publico de descargas: suma lo que GitHub cuenta de cada .exe publicado,
+// en todas las versiones. Si GitHub no responde, el contador queda escondido.
+async function mostrarTotalDescargas() {
+  const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases?per_page=100", {
+    headers: { Accept: "application/vnd.github+json" },
+  });
+  if (!r.ok) throw new Error(`descargas: ${r.status}`);
+  const versiones = await r.json();
+  const total = versiones.flatMap((v) => v.assets || [])
+    .filter((a) => a.name.toLowerCase().endsWith(".exe"))
+    .reduce((suma, a) => suma + (a.download_count || 0), 0);
+  if (!total) return;
+  document.querySelectorAll("[data-descargas]").forEach((el) => { el.textContent = total.toLocaleString("es-VE"); });
+  document.querySelectorAll("[data-contador]").forEach((el) => { el.hidden = false; });
+}
+
 function contarDescargas() {
   document.querySelectorAll("a[data-descarga]").forEach((a) => {
     a.addEventListener("click", () => {
@@ -162,4 +178,4 @@ function prepararSolicitud() {
 contarDescargas();
 elegirPlanAlPulsar();
 prepararSolicitud();
-Promise.allSettled([enlazarInstalador(), cargarPlanes(), cargarVideos(), cargarAjustes()]);
+Promise.allSettled([enlazarInstalador(), mostrarTotalDescargas(), cargarPlanes(), cargarVideos(), cargarAjustes()]);
