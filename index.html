@@ -409,6 +409,29 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .reproducir { transition: transform .15s ease; }
 
 /* Prueba gratis */
+/* Novedades: lo que trae cada actualizacion de las dos apps */
+.novedades { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: start; }
+.novedades-app { border: 1px solid var(--linea); border-radius: 20px; padding: 28px; background: var(--noche); display: grid; gap: 18px; min-width: 0; }
+.novedades-app.por-salir { border-style: dashed; background: transparent; }
+.novedades-app .boton { justify-self: start; }
+.novedades-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.novedades-cabeza h3 { font-size: 20px; }
+.novedades-cabeza em { font-style: normal; color: var(--naranja); }
+.por-salir .novedades-cabeza em { color: var(--ambar); }
+.novedades-nota { color: var(--crema-suave); font-size: 15px; }
+.cambios { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.cambio { position: relative; padding: 0 0 22px 26px; border-left: 2px solid var(--linea); margin-left: 5px; }
+.cambio:last-child { padding-bottom: 4px; }
+.cambio::before { content: ""; position: absolute; left: -7px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--noche); border: 2px solid var(--linea); }
+.cambio.reciente::before { background: var(--naranja); border-color: var(--naranja); box-shadow: 0 0 0 4px rgba(255, 122, 69, .18); }
+.cambio-cabeza { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.cambio-cabeza strong { font-family: var(--display); font-size: 16px; font-weight: 600; }
+.cambio-fecha { font-family: var(--mono); font-size: 12px; color: var(--tenue); }
+.nueva { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--noche); background: var(--naranja); border-radius: 99px; padding: 2px 8px; }
+.cambio ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--crema-suave); font-size: 15px; }
+.anteriores summary { cursor: pointer; font-family: var(--mono); font-size: 13px; color: var(--naranja); }
+.anteriores .cambios { margin-top: 18px; }
+
 /* Descargar: las dos versiones del programa */
 .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
 .app-version { border: 1px solid var(--linea); border-radius: 20px; padding: 30px; display: grid; gap: 16px; align-content: start; background: var(--noche-2); min-width: 0; }
@@ -441,7 +464,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .como-licencia { margin-top: 28px; color: var(--crema-suave); font-size: 15px; max-width: 52em; }
 
 /* Pedido de licencia */
-.compra { margin-top: 36px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; border: 1px solid var(--linea); border-radius: 18px; padding: 32px; background: var(--noche); }
+.compra { margin-top: 36px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; border: 1px solid var(--linea); border-radius: 18px; padding: 32px; background: var(--noche-2); }
 .compra-texto { display: grid; gap: 12px; align-content: start; min-width: 0; }
 .compra-texto h3 { font-size: 22px; }
 .compra-texto p { color: var(--crema-suave); font-size: 15px; }
@@ -465,7 +488,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 
 /* Preguntas */
 .preguntas { display: grid; gap: 10px; max-width: 52em; }
-.preguntas details { border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; background: var(--noche-2); }
+.preguntas details { border: 1px solid var(--linea); border-radius: 12px; padding: 16px 20px; background: var(--noche); }
 .preguntas summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
 .preguntas summary::after { content: "+"; color: var(--naranja); font-family: var(--mono); font-size: 18px; line-height: 1; }
 .preguntas details[open] summary::after { content: "−"; }
@@ -485,7 +508,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .app { grid-template-columns: 1fr; }
   .bancos-fila { grid-template-columns: 1fr; gap: 28px; }
   .requisitos { grid-template-columns: 1fr; }
-  .apps { grid-template-columns: 1fr; }
+  .apps, .novedades { grid-template-columns: 1fr; }
   .app-lado { display: none; }
   .posicion-rejilla { grid-template-columns: 1fr; }
   .fase { grid-template-columns: 1fr; gap: 14px; }
@@ -532,6 +555,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
       <a href="#equipo">Tu equipo</a>
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#videos">Videos</a>
+      <a href="#novedades">Novedades</a>
       <a href="#licencias">Licencias</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
@@ -990,7 +1014,38 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda banda-alterna" id="licencias">
+  <section class="banda banda-alterna" id="novedades">
+    <div class="envoltura">
+      <div class="encabezado">
+        <p class="etiqueta">Novedades</p>
+        <h2>Tus bots no se quedan quietos.</h2>
+        <p>Cada actualización trae mejoras para tus bots. El programa te avisa al abrirlo y se actualiza con un clic.</p>
+      </div>
+      <div class="novedades">
+        <div class="novedades-app">
+          <div class="novedades-cabeza"><h3>P2PAutoPay <em>No verificados</em></h3><span class="sello sello-ok">Disponible</span></div>
+          <ol class="cambios" id="cambios-no-verificados">
+            <li class="cambio reciente"><div class="cambio-cabeza"><strong>Versión 1.7.0</strong><span class="cambio-fecha">2 nov. 2026</span><span class="nueva">Nueva</span></div><ul><li>Mejoras al bot de posicionamiento</li><li>Mejoras en las pantallas del programa</li><li>Corrección de errores y mejoras de estabilidad</li></ul></li>
+            <li class="cambio"><div class="cambio-cabeza"><strong>Versión 1.6.0</strong><span class="cambio-fecha">23 oct. 2026</span></div><ul><li>Mejoras al bot de pagos Mercantil</li><li>Mejoras al bot de Binance</li><li>Mejoras al bot de posicionamiento</li><li>Mejoras de seguridad</li></ul></li>
+            <li class="cambio"><div class="cambio-cabeza"><strong>Versión 1.5.0</strong><span class="cambio-fecha">19 oct. 2026</span></div><ul><li>Mejoras al bot de Binance</li><li>Mejoras al bot de posicionamiento</li><li>Mejoras en las licencias</li></ul></li>
+          </ol>
+          <details class="anteriores" id="anteriores-no-verificados" hidden><summary>Ver versiones anteriores</summary><ol class="cambios"></ol></details>
+        </div>
+        <div class="novedades-app por-salir">
+          <div class="novedades-cabeza"><h3>P2PAutoPay <em>Verificados</em></h3><span class="sello">En desarrollo</span></div>
+          <p class="novedades-nota">Todavía no tiene versiones publicadas. Esto es lo que trae su primera versión:</p>
+          <ul class="app-lista ventajas">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span><b>Conexión directa con Binance</b>, mucho más rápida</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span><b>Módulo de finanzas:</b> el Bot 7, el Contador, con exportación a Excel</span></li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Todo lo de No verificados, unificado en un solo sistema</span></li>
+          </ul>
+          <a class="boton boton-secundario" href="#solicitud" data-plan="verificados">Avísame cuando salga</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda" id="licencias">
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Licencias</p>
@@ -1017,7 +1072,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda" id="preguntas">
+  <section class="banda banda-alterna" id="preguntas">
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Preguntas frecuentes</p>
@@ -1034,7 +1089,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda banda-alterna">
+  <section class="banda">
     <div class="envoltura cierre">
       <p class="etiqueta">Empieza hoy</p>
       <h2>Que el bot pague mientras tú haces crecer tu negocio.</h2>
@@ -1054,7 +1109,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
   </div>
 </footer>
-<script src="app.js?v=7" defer></script>
+<script src="app.js?v=8" defer></script>
 <script src="escena.js?v=2" defer></script>
 
 </body>

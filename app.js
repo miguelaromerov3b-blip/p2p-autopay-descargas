@@ -99,17 +99,16 @@ async function cargarAjustes() {
   }
 }
 
-// Los botones de descarga bajan el instalador directo: se pide a GitHub la ultima
-// version publicada y se pone el enlace del .exe. Si GitHub no responde, el boton
-// sigue llevando a la pagina de la ultima version.
+// Los botones de descarga bajan el instalador directo: de las versiones publicadas
+// en GitHub se toma la mas nueva y se pone el enlace de su .exe. Si GitHub no
+// responde, el boton sigue llevando a la pagina de la ultima version.
 async function enlazarInstalador() {
-  const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest", {
-    headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!r.ok) throw new Error(`releases: ${r.status}`);
-  const version = await r.json();
-  const exe = (version.assets || []).find((a) => a.name.toLowerCase().endsWith(".exe"));
-  if (!exe) return;
+  const versiones = (await leerVersiones())
+    .filter((v) => (v.assets || []).some((a) => a.name.toLowerCase().endsWith(".exe")))
+    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+  const version = versiones[0];
+  if (!version) return;
+  const exe = version.assets.find((a) => a.name.toLowerCase().endsWith(".exe"));
   document.querySelectorAll("a[data-descarga]").forEach((a) => { a.href = exe.browser_download_url; });
   const numero = String(version.tag_name || "").replace(/^v/, "");
   if (numero) document.querySelectorAll("[data-version]").forEach((el) => { el.textContent = numero; });
@@ -134,18 +133,66 @@ function pintarDescargas(total, animar) {
   requestAnimationFrame(paso);
 }
 
-async function mostrarTotalDescargas() {
-  const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases?per_page=100", {
+// Todas las versiones publicadas (una sola consulta a GitHub para el contador
+// y para las novedades).
+let versionesPublicadas = null;
+function leerVersiones() {
+  versionesPublicadas ??= fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases?per_page=100", {
     headers: { Accept: "application/vnd.github+json" },
-  });
-  if (!r.ok) throw new Error(`descargas: ${r.status}`);
-  const versiones = await r.json();
+  }).then((r) => {
+    if (!r.ok) throw new Error(`versiones: ${r.status}`);
+    return r.json();
+  }).then((lista) => lista.filter((v) => !v.draft && !v.prerelease && v.published_at));
+  return versionesPublicadas;
+}
+
+async function mostrarTotalDescargas() {
+  const versiones = await leerVersiones();
   totalDescargas = versiones.flatMap((v) => v.assets || [])
     .filter((a) => a.name.toLowerCase().endsWith(".exe"))
     .reduce((suma, a) => suma + (a.download_count || 0), 0);
   if (!totalDescargas) return;
   document.querySelectorAll("[data-contador]").forEach((el) => { el.hidden = false; });
   pintarDescargas(totalDescargas, true);
+}
+
+// Novedades: las notas de cada version tal como se publican en GitHub, la mas
+// nueva arriba. Las lineas tecnicas o la que solo repite el numero no se muestran.
+const LINEA_INTERNA = /^versi[oó]n\s+\d|supabase|app_reportes|python|mantis|patron del correo/i;
+
+function notasDe(version) {
+  return String(version.body || "").split(/\r?\n/)
+    .map((l) => l.replace(/^\s*[-*]\s*/, "").trim())
+    .filter((l) => l && !LINEA_INTERNA.test(l));
+}
+
+function tarjetaCambio(version, reciente) {
+  const li = crear("li", reciente ? "cambio reciente" : "cambio");
+  const cabeza = crear("div", "cambio-cabeza");
+  const numero = String(version.tag_name || "").replace(/^v/, "");
+  const fecha = new Date(version.published_at).toLocaleDateString("es-VE", { day: "numeric", month: "short", year: "numeric" });
+  cabeza.append(crear("strong", null, `Versión ${numero}`), crear("span", "cambio-fecha", fecha));
+  if (reciente) cabeza.append(crear("span", "nueva", "Nueva"));
+  const lista = crear("ul");
+  lista.append(...notasDe(version).map((n) => crear("li", null, n)));
+  li.append(cabeza, lista);
+  return li;
+}
+
+async function mostrarNovedades() {
+  const versiones = (await leerVersiones())
+    .sort((a, b) => new Date(b.published_at) - new Date(a.published_at))
+    .filter((v) => notasDe(v).length);
+  if (!versiones.length) return;
+  const recientes = versiones.slice(0, 3);
+  const viejas = versiones.slice(3);
+  document.getElementById("cambios-no-verificados")
+    .replaceChildren(...recientes.map((v, i) => tarjetaCambio(v, i === 0)));
+  const anteriores = document.getElementById("anteriores-no-verificados");
+  if (viejas.length) {
+    anteriores.querySelector(".cambios").replaceChildren(...viejas.map((v) => tarjetaCambio(v, false)));
+    anteriores.hidden = false;
+  }
 }
 
 // Al pulsar Descargar, el contador suma la descarga del visitante y le da la bienvenida.
@@ -213,4 +260,4 @@ function prepararSolicitud() {
 contarDescargas();
 elegirPlanAlPulsar();
 prepararSolicitud();
-Promise.allSettled([enlazarInstalador(), mostrarTotalDescargas(), cargarPlanes(), cargarVideos(), cargarAjustes()]);
+Promise.allSettled([enlazarInstalador(), mostrarTotalDescargas(), mostrarNovedades(), cargarPlanes(), cargarVideos(), cargarAjustes()]);
