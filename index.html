@@ -437,20 +437,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .app-version .contador { margin-top: -4px; }
 
 /* Licencias */
-.planes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-.plan { border: 1px solid var(--linea); border-radius: 18px; padding: 30px 28px; display: grid; gap: 12px; align-content: start; background: var(--noche); min-width: 0; }
-.plan.destacado { border-color: var(--naranja); box-shadow: 0 30px 70px -45px rgba(255, 122, 69, .5); }
-.plan.proximamente { background: var(--noche-3); }
-.plan.proximamente .precio strong { color: var(--crema-suave); }
-.plan-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.plan h3 { font-size: 20px; }
 .sello { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--naranja); border: 1px solid var(--naranja-fuerte); border-radius: 99px; padding: 4px 10px; }
-.plan .precio { display: flex; align-items: baseline; gap: 10px; }
-.plan .precio strong { font-family: var(--display); font-size: 48px; font-weight: 600; line-height: 1; color: var(--naranja); font-variant-numeric: tabular-nums; }
-.plan .precio span { font-family: var(--mono); color: var(--crema-suave); font-size: 14px; }
-.plan-nota { color: var(--crema); font-weight: 600; }
-.plan-detalle { color: var(--crema-suave); font-size: 15px; }
-.plan .boton { justify-self: start; margin-top: 8px; }
 .como-licencia { margin-top: 28px; color: var(--crema-suave); font-size: 15px; max-width: 52em; }
 
 /* Pedido de licencia */
@@ -518,7 +505,6 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .videos, .tu-dia { grid-template-columns: 1fr; }
   .fase-trabajadores { grid-template-columns: 1fr; gap: 12px; }
   .trabajador + .trabajador::before { left: 50%; top: -13px; width: 2px; height: 12px; }
-  .planes { grid-template-columns: 1fr; }
   .app-version { padding: 22px; }
   .compra { padding: 22px; }
   .formulario { grid-template-columns: 1fr; }
@@ -1008,28 +994,12 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Licencias</p>
-        <h2>Un precio claro según tu nivel en Binance.</h2>
-        <p>Cada licencia es para una PC y funciona sin internet. Si cambias de PC, te la pasamos.</p>
-      </div>
-      <div class="planes" id="planes">
-        <article class="plan destacado">
-          <div class="plan-cabeza"><h3>No verificados</h3></div>
-          <p class="precio"><strong>$80</strong><span>pago único</span></p>
-          <p class="plan-nota">Licencia ilimitada para una PC</p>
-          <p class="plan-detalle">Para comerciantes de Binance P2P sin verificación. Pagas una sola vez y la licencia no vence.</p>
-          <a class="boton boton-principal" href="#solicitud" data-plan="ilimitada">Pedir mi licencia</a>
-        </article>
-        <article class="plan proximamente">
-          <div class="plan-cabeza"><h3>Verificados</h3><span class="sello">Próximamente</span></div>
-          <p class="precio"><strong>$100</strong><span>al mes</span></p>
-          <p class="plan-nota">Instalador propio para comerciantes verificados</p>
-          <p class="plan-detalle">La versión más rápida: conectada directo con Binance y con módulo de finanzas. Déjanos tus datos y te avisamos al salir.</p>
-          <a class="boton boton-secundario" href="#solicitud" data-plan="verificados">Avísame cuando salga</a>
-        </article>
+        <h2>Pide tu licencia o reserva tu puesto.</h2>
+        <p>Cada licencia es para una PC y funciona sin internet. Si cambias de PC, te la pasamos. Los precios y lo que trae cada versión están en <a href="#descargar">Descargar</a>.</p>
       </div>
       <div class="compra">
         <div class="compra-texto">
-          <h3>Pide tu licencia o reserva tu puesto</h3>
+          <h3>Cómo funciona la compra</h3>
           <p>Abre el programa, ve a Ajustes → Licencia y copia el código de tu PC. Déjanos tus datos y te escribimos para el pago. Al pagar te enviamos la licencia para pegar en "Activar licencia".</p>
           <p class="contacto-directo" id="contacto-directo" hidden>¿Prefieres escribir directo? <strong data-contacto></strong></p>
         </div>
@@ -1084,7 +1054,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
   </div>
 </footer>
-<script src="app.js?v=6" defer></script>
+<script src="app.js?v=7" defer></script>
 <script src="escena.js?v=2" defer></script>
 
 </body>

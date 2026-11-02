@@ -39,7 +39,7 @@ async function cargarPlanes() {
   const caja = document.getElementById("planes");
   const lista = document.getElementById("solicitud-plan");
   if (!planes.length) return;
-  caja.replaceChildren(...planes.map((p) => {
+  if (caja) caja.replaceChildren(...planes.map((p) => {
     const tarjeta = crear("article", p.proximamente ? "plan proximamente" : p.destacado ? "plan destacado" : "plan");
     const cabeza = crear("div", "plan-cabeza");
     cabeza.append(crear("h3", null, p.nombre));
