@@ -62,9 +62,10 @@ async function cargarPlanes() {
   }));
 }
 
-// Los botones de cada plan bajan al formulario con ese plan ya elegido.
+// Los botones de cada plan (en Licencias y en Descargar) bajan al formulario
+// con ese plan ya elegido.
 function elegirPlanAlPulsar() {
-  document.getElementById("planes").addEventListener("click", (e) => {
+  document.addEventListener("click", (e) => {
     const boton = e.target.closest("a[data-plan]");
     if (!boton) return;
     const lista = document.getElementById("solicitud-plan");

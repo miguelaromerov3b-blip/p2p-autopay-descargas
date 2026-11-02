@@ -408,9 +408,32 @@ a.video:hover .reproducir { transform: scale(1.06); }
 .reproducir { transition: transform .15s ease; }
 
 /* Prueba gratis */
-.vitrina { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center; border: 1px solid var(--naranja-fuerte); border-radius: 18px; padding: 34px; background: linear-gradient(120deg, rgba(194, 65, 12, .18), transparent 60%); }
-.vitrina h2 { font-size: clamp(22px, 2.8vw, 30px); }
-.vitrina p { color: var(--crema-suave); margin-top: 10px; max-width: 40em; }
+/* Descargar: las dos versiones del programa */
+.apps { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+.app-version { border: 1px solid var(--linea); border-radius: 20px; padding: 30px; display: grid; gap: 16px; align-content: start; background: var(--noche-2); min-width: 0; }
+.app-version.disponible { border-color: var(--naranja); background: linear-gradient(160deg, rgba(255, 122, 69, .10), var(--noche-2) 45%); box-shadow: 0 30px 70px -45px rgba(255, 122, 69, .55); }
+.app-version.por-salir { border-style: dashed; }
+.app-version-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.app-version-num { font-family: var(--mono); font-size: 12px; color: var(--tenue); }
+.sello.sello-ok { color: var(--verde); border-color: rgba(62, 207, 142, .5); }
+.por-salir .sello { color: var(--ambar); border-color: rgba(245, 181, 68, .5); }
+.app-version h3 { font-size: clamp(22px, 2.4vw, 28px); }
+.app-version h3 em { font-style: normal; color: var(--naranja); }
+.por-salir h3 em { color: var(--ambar); }
+.app-para { color: var(--crema-suave); }
+.app-precio { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.app-precio strong { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--crema); }
+.app-precio span { font-family: var(--mono); font-size: 13px; color: var(--crema-suave); }
+.app-bloque { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--linea); }
+.app-bloque h4 { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--tenue); }
+.app-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; font-size: 15px; color: var(--crema-suave); }
+.app-lista li { display: flex; gap: 10px; align-items: flex-start; }
+.app-lista svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; stroke: var(--verde); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.app-lista.ventajas svg { stroke: var(--naranja); }
+.por-salir .app-lista.ventajas svg { stroke: var(--ambar); }
+.app-lista b { color: var(--crema); font-weight: 600; }
+.app-acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.app-version .contador { margin-top: -4px; }
 
 /* Licencias */
 .planes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
@@ -474,6 +497,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .app { grid-template-columns: 1fr; }
   .bancos-fila { grid-template-columns: 1fr; gap: 28px; }
   .requisitos { grid-template-columns: 1fr; }
+  .apps { grid-template-columns: 1fr; }
   .app-lado { display: none; }
   .posicion-rejilla { grid-template-columns: 1fr; }
   .fase { grid-template-columns: 1fr; gap: 14px; }
@@ -494,7 +518,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .fase-trabajadores { grid-template-columns: 1fr; gap: 12px; }
   .trabajador + .trabajador::before { left: 50%; top: -13px; width: 2px; height: 12px; }
   .planes { grid-template-columns: 1fr; }
-  .vitrina { grid-template-columns: 1fr; padding: 24px; }
+  .app-version { padding: 22px; }
   .compra { padding: 22px; }
   .formulario { grid-template-columns: 1fr; }
   .app-tiles { grid-template-columns: repeat(2, 1fr); }
@@ -524,7 +548,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
       <a href="#licencias">Licencias</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
-    <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="barra">Descargar</a>
+    <a class="boton boton-principal" href="#descargar">Descargar</a>
   </div>
 </header>
 
@@ -536,7 +560,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
         <h1 style="margin-top:16px">Tu P2P en <em>piloto automático</em>.</h1>
         <p class="bajada">P2PAutoPay son <a href="#equipo" class="enlace-banco">seis bots que trabajan para ti</a>: uno lee el mercado, otro cuida el puesto de tu anuncio, otro paga por Banesco o Mercantil y otro te avisa por Telegram. Tú diriges; los bots trabajan.</p>
         <div class="acciones">
-          <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="hero">
+          <a class="boton boton-principal" href="#descargar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
             Descargar para Windows
           </a>
@@ -921,15 +945,60 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda">
+  <section class="banda" id="descargar">
     <div class="envoltura">
-      <div class="vitrina">
-        <div>
-          <p class="etiqueta">Pruébalo gratis</p>
-          <h2 style="margin-top:10px">Instálalo hoy y mira el mercado en vivo sin pagar nada.</h2>
-          <p>Sin licencia, P2PAutoPay funciona en modo vitrina: el posicionamiento lee el mercado, la calculadora y las estrategias funcionan, y recorres todo el programa. Los pagos y Binance se encienden al activar tu licencia.</p>
-        </div>
-        <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="vitrina">Descargar gratis</a>
+      <div class="encabezado">
+        <p class="etiqueta">Descargar</p>
+        <h2>Elige la versión hecha para tu nivel en Binance.</h2>
+        <p>Hay dos P2PAutoPay. Cada una trae sus bots afinados para el tipo de comerciante que eres. ¿Todavía no estás verificado en Binance? Empieza con la primera y te pasas a la segunda el día que te verifiques.</p>
+      </div>
+      <div class="apps">
+        <article class="app-version disponible">
+          <div class="app-version-cabeza">
+            <span class="sello sello-ok">Disponible</span>
+            <span class="app-version-num">Versión <span data-version>1.4.0</span> · Windows</span>
+          </div>
+          <h3>P2PAutoPay <em>No verificados</em></h3>
+          <p class="app-para">Para comerciantes de Binance P2P que aún no tienen verificación.</p>
+          <p class="app-precio"><strong>$80</strong><span>pago único · la licencia no vence</span></p>
+          <div class="app-bloque">
+            <h4>Lo que trae</h4>
+            <ul class="app-lista"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Los 6 bots: Analista, Posicionador, Vigilante, Pagador, Mensajero y Asistente</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Pagos automáticos por Banesco y Mercantil, con comprobante</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Comprobante al chat y orden marcada como pagada</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Posicionamiento con estrategias y calculadora de ciclos</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Avisos y centro de mando en Telegram</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Panel en vivo con el botón Apagar todo</span></li></ul>
+          </div>
+          <div class="app-bloque">
+            <h4>Sus ventajas</h4>
+            <ul class="app-lista ventajas"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span><b>Pruébala gratis:</b> sin licencia lee el mercado en vivo y recorres todo el programa</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span><b>Pagas una sola vez</b>, sin mensualidad</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>La forma más barata de poner tus bots a trabajar desde hoy</span></li></ul>
+          </div>
+          <div class="app-acciones">
+            <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="no-verificados">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+              Descargar gratis
+            </a>
+            <a class="boton boton-secundario" href="#solicitud" data-plan="ilimitada">Pedir mi licencia</a>
+          </div>
+          <p class="contador" data-contador hidden><span class="punto" aria-hidden="true"></span><span data-impulso>Ya van <strong data-descargas>0</strong> descargas. Sé la número <span data-siguiente></span>.</span></p>
+        </article>
+
+        <article class="app-version por-salir">
+          <div class="app-version-cabeza">
+            <span class="sello">Próximamente</span>
+            <span class="app-version-num">Instalador propio · Windows</span>
+          </div>
+          <h3>P2PAutoPay <em>Verificados</em></h3>
+          <p class="app-para">Para comerciantes verificados de Binance: Bronce, Plata y Oro.</p>
+          <p class="app-precio"><strong>$100</strong><span>al mes</span></p>
+          <div class="app-bloque">
+            <h4>Lo que trae</h4>
+            <ul class="app-lista"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Todo lo de la versión No verificados</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Bots que compiten en la lista de comerciantes verificados, donde el cliente paga mejor</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Estrategias ajustadas a tu nivel de comerciante</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Pensada para más volumen y más órdenes al día</span></li></ul>
+          </div>
+          <div class="app-bloque">
+            <h4>Sus ventajas</h4>
+            <ul class="app-lista ventajas"><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span><b>Le sacas provecho a tu verificación:</b> tus bots trabajan donde está el margen más alto</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Actualizaciones y mejoras incluidas en la mensualidad</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Quienes se anoten primero se enteran antes que nadie</span></li></ul>
+          </div>
+          <div class="app-acciones">
+            <a class="boton boton-secundario" href="#solicitud" data-plan="verificados">Avísame cuando salga</a>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -998,8 +1067,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <div class="envoltura cierre">
       <p class="etiqueta">Empieza hoy</p>
       <h2>Que el bot pague mientras tú haces crecer tu negocio.</h2>
-      <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="cierre">Descargar P2PAutoPay</a>
-      <p class="contador" data-contador hidden><span class="punto" aria-hidden="true"></span><span data-impulso>Ya van <strong data-descargas>0</strong> descargas. Sé la número <span data-siguiente></span>.</span></p>
+      <a class="boton boton-principal" href="#descargar">Elegir mi versión</a>
     </div>
   </section>
 </main>
@@ -1015,7 +1083,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <p>Letra Unbounded bajo licencia SIL Open Font License.</p>
   </div>
 </footer>
-<script src="app.js?v=5" defer></script>
+<script src="app.js?v=6" defer></script>
 <script src="escena.js?v=2" defer></script>
 
 </body>
