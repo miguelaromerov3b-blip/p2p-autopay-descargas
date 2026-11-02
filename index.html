@@ -309,13 +309,36 @@ p { margin: 0; }
 .encabezado h2 { font-size: clamp(26px, 3.4vw, 38px); }
 .encabezado p { color: var(--crema-suave); font-size: 17px; }
 
-/* Capacidades */
-.capacidades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--linea); border: 1px solid var(--linea); border-radius: 18px; overflow: hidden; }
-.capacidad { background: var(--noche); padding: 28px 26px; display: grid; gap: 10px; align-content: start; min-width: 0; }
-.capacidad svg { width: 28px; height: 28px; stroke: var(--naranja); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.capacidad h3 { font-size: 17px; margin-top: 6px; }
-.capacidad p { color: var(--crema-suave); font-size: 15px; }
-.capacidad ul { margin: 4px 0 0; padding-left: 18px; color: var(--crema-suave); font-size: 14px; display: grid; gap: 4px; }
+/* Tu equipo: los trabajadores en su linea de trabajo */
+.linea-trabajo { display: grid; gap: 0; }
+.fase { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: start; }
+.fase-nombre { display: grid; gap: 6px; padding-top: 22px; }
+.fase-nombre span { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--naranja); }
+.fase-nombre h3 { font-size: 20px; }
+.fase-trabajadores { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.trabajador { position: relative; background: var(--noche); border: 1px solid var(--linea); border-radius: 16px; padding: 22px; display: grid; gap: 8px; align-content: start; min-width: 0; animation: relevo 14s ease-in-out infinite; animation-delay: calc(var(--i) * 2s); }
+.trabajador + .trabajador::before { content: ""; position: absolute; left: -17px; top: 50%; width: 16px; height: 2px; background: var(--naranja-fuerte); }
+@keyframes relevo { 0%, 16%, 100% { border-color: var(--linea); box-shadow: none; } 4%, 12% { border-color: var(--naranja); box-shadow: 0 0 0 4px rgba(255, 122, 69, .12), 0 18px 40px -24px rgba(255, 122, 69, .6); } }
+.trabajador-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.trabajador-icono { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 122, 69, .12); }
+.trabajador-icono svg { width: 24px; height: 24px; stroke: var(--naranja); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.turno { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--verde); }
+.turno::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.trabajador h3 { font-size: 18px; }
+.puesto { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--tenue); }
+.trabajador p { color: var(--crema-suave); font-size: 15px; }
+.trabajador .gana { margin-top: 6px; padding-top: 12px; border-top: 1px dashed var(--linea); font-size: 14px; }
+.gana b { color: var(--naranja); font-weight: 600; }
+.trabajador.por-llegar { animation: none; border-style: dashed; background: transparent; }
+.trabajador.por-llegar .turno { color: var(--ambar); }
+.trabajador.por-llegar .trabajador-icono { background: rgba(245, 181, 68, .1); }
+.trabajador.por-llegar .trabajador-icono svg { stroke: var(--ambar); }
+.relevo { margin: 0; padding: 14px 0 14px 204px; display: flex; align-items: center; gap: 12px; color: var(--tenue); font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.relevo::before { content: ""; width: 2px; height: 28px; background: linear-gradient(var(--naranja-fuerte), transparent); }
+.garantias { margin-top: 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.garantias p { display: flex; gap: 12px; align-items: flex-start; color: var(--crema-suave); font-size: 15px; margin: 0; }
+.garantias b { color: var(--crema); }
+.garantias svg { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; stroke: var(--verde); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Capturas */
 .captura { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: center; }
@@ -329,12 +352,24 @@ p { margin: 0; }
 .marco-barra { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--linea); }
 .marco-barra i { width: 9px; height: 9px; border-radius: 50%; background: var(--linea); }
 
-/* Pasos de uso: secuencia real */
-.pasos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: paso; list-style: none; margin: 0; padding: 0; }
-.pasos li { counter-increment: paso; border-top: 2px solid var(--naranja); padding-top: 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
-.pasos li::before { content: "Paso " counter(paso); font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--naranja); }
-.pasos h3 { font-size: 17px; }
-.pasos p { color: var(--crema-suave); font-size: 15px; }
+/* Como funciona: tu parte, paso a paso, y tu dia con y sin equipo */
+.ruta { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; counter-reset: paso; }
+.ruta li { counter-increment: paso; position: relative; display: grid; gap: 8px; align-content: start; padding-top: 58px; min-width: 0; }
+.ruta li::before { content: counter(paso); position: absolute; top: 0; left: 0; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--naranja); color: var(--noche); font-family: var(--display); font-size: 17px; }
+.ruta li::after { content: ""; position: absolute; top: 20px; left: 52px; right: -8px; height: 2px; background: linear-gradient(90deg, var(--naranja-fuerte), var(--linea)); }
+.ruta li:last-child::after { display: none; }
+.ruta-cuando { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--tenue); }
+.ruta h3 { font-size: 17px; }
+.ruta p { color: var(--crema-suave); font-size: 15px; }
+.tu-dia { margin-top: 52px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.dia { border: 1px solid var(--linea); border-radius: 16px; padding: 26px; display: grid; gap: 14px; align-content: start; }
+.dia h3 { font-size: 18px; }
+.dia ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 15px; }
+.dia li { display: flex; gap: 10px; color: var(--crema-suave); }
+.dia-antes li::before { content: "✕"; color: var(--tenue); }
+.dia-despues { border-color: var(--naranja-fuerte); background: linear-gradient(140deg, rgba(194, 65, 12, .16), transparent 65%); }
+.dia-despues li { color: var(--crema); }
+.dia-despues li::before { content: "✓"; color: var(--verde); }
 
 /* Requisitos */
 .requisitos { display: grid; grid-template-columns: 1.35fr .65fr; gap: 24px; align-items: start; }
@@ -441,8 +476,13 @@ a.video:hover .reproducir { transform: scale(1.06); }
   .requisitos { grid-template-columns: 1fr; }
   .app-lado { display: none; }
   .posicion-rejilla { grid-template-columns: 1fr; }
-  .capacidades { grid-template-columns: repeat(2, 1fr); }
-  .pasos { grid-template-columns: repeat(2, 1fr); }
+  .fase { grid-template-columns: 1fr; gap: 14px; }
+  .fase-nombre { padding-top: 0; }
+  .relevo { padding-left: 0; }
+  .ruta { grid-template-columns: 1fr; gap: 0; }
+  .ruta li { padding: 0 0 26px 62px; }
+  .ruta li::after { top: 48px; bottom: 4px; left: 20px; right: auto; width: 2px; height: auto; background: linear-gradient(var(--naranja-fuerte), var(--linea)); }
+  .garantias { grid-template-columns: 1fr; }
   .menu { display: none; }
   .compra { grid-template-columns: 1fr; gap: 24px; }
   .barra .boton { margin-left: auto; }
@@ -450,7 +490,9 @@ a.video:hover .reproducir { transform: scale(1.06); }
 @media (max-width: 600px) {
   .hero { padding-block: 44px 36px; }
   .banda { padding-block: 60px; }
-  .capacidades, .pasos, .videos { grid-template-columns: 1fr; }
+  .videos, .tu-dia { grid-template-columns: 1fr; }
+  .fase-trabajadores { grid-template-columns: 1fr; gap: 12px; }
+  .trabajador + .trabajador::before { left: 50%; top: -13px; width: 2px; height: 12px; }
   .planes { grid-template-columns: 1fr; }
   .vitrina { grid-template-columns: 1fr; padding: 24px; }
   .compra { padding: 22px; }
@@ -476,7 +518,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
   <div class="envoltura">
     <a class="marca" href="#inicio"><img src="img/logo.svg" alt="">P2P<b>AutoPay</b></a>
     <nav class="menu" aria-label="Secciones">
-      <a href="#capacidades">Capacidades</a>
+      <a href="#equipo">Tu equipo</a>
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#videos">Videos</a>
       <a href="#licencias">Licencias</a>
@@ -492,7 +534,7 @@ a.video:hover .reproducir { transform: scale(1.06); }
       <div>
         <p class="etiqueta">Binance P2P · USDT / VES · Windows</p>
         <h1 style="margin-top:16px">Tu P2P en <em>piloto automático</em>.</h1>
-        <p class="bajada">P2PAutoPay paga tus órdenes de compra por <a href="#bancos" class="enlace-banco">Banesco o Mercantil</a>, sube el comprobante a Binance, marca la orden como pagada y vigila el puesto de tu anuncio. Tú dejas de estar pegado a la pantalla.</p>
+        <p class="bajada">P2PAutoPay es un <a href="#equipo" class="enlace-banco">equipo de trabajadores digitales</a>: uno lee el mercado, otro cuida el puesto de tu anuncio, otro paga por Banesco o Mercantil y otro te avisa por Telegram. Tú diriges; ellos trabajan.</p>
         <div class="acciones">
           <a class="boton boton-principal" href="https://github.com/miguelaromerov3b-blip/p2p-autopay-descargas/releases/latest" data-descarga="hero">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
@@ -603,47 +645,87 @@ a.video:hover .reproducir { transform: scale(1.06); }
     </div>
   </section>
 
-  <section class="banda banda-alterna" id="capacidades">
+  <section class="banda banda-alterna" id="equipo">
     <div class="envoltura">
       <div class="encabezado">
-        <p class="etiqueta">Capacidades</p>
-        <h2>Todo tu flujo P2P en un solo programa.</h2>
-        <p>Pagos, Binance, posicionamiento y avisos trabajan juntos en una ventana. Ligero para PCs modestas y sin páginas web que abrir.</p>
+        <p class="etiqueta">Tu equipo</p>
+        <h2>No es un bot. Es un equipo trabajando para ti.</h2>
+        <p>P2PAutoPay pone seis trabajadores digitales en tu PC. Cada uno tiene su puesto y le pasa el trabajo al siguiente, como en una buena oficina. No se cansan, no se distraen y no se van a almorzar. Tú diriges; ellos hacen el trabajo repetitivo para que tú te quedes con la ganancia.</p>
       </div>
-      <div class="capacidades">
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
-          <h3>Bot de pagos</h3>
-          <p>Transferencias Banesco y Mercantil en cola, una tras otra, sin que toques el teclado.</p>
-          <ul><li>Captura el comprobante de cada pago</li><li>No paga órdenes vencidas</li><li>Un error manda la orden a Revisión, nunca traba la cola</li></ul>
-        </article>
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
-          <h3>Vigilante de Binance</h3>
-          <p>Detecta tus órdenes de compra, sube el comprobante y marca "pagado" en segundos.</p>
-          <ul><li>Tus clientes esperan menos</li><li>Mejor tiempo de pago en tu perfil</li></ul>
-        </article>
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
-          <h3>Posicionamiento</h3>
-          <p>Lee el mercado USDT/VES en vivo y te dice dónde está tu anuncio frente a la competencia.</p>
-          <ul><li>Calculadora de ciclos y ganancia</li><li>Estrategias con datos reales</li><li>Vigía del puesto de tu anuncio</li></ul>
-        </article>
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/><path d="m9 13 8-6"/></svg>
-          <h3>Telegram como centro de mando</h3>
-          <p>Recibe avisos en el teléfono cuando una orden necesita tu revisión. Opcional.</p>
-        </article>
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
-          <h3>Tus claves no se guardan</h3>
-          <p>Tú inicias sesión en el banco y en Binance. Los códigos de pago viven solo en memoria mientras el programa está abierto.</p>
-        </article>
-        <article class="capacidad">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
-          <h3>Siempre al día</h3>
-          <p>Al abrir, el programa te avisa de la versión nueva y se actualiza con un clic.</p>
-        </article>
+
+      <div class="linea-trabajo">
+        <div class="fase">
+          <div class="fase-nombre"><span>Fase 1</span><h3>Traer clientes</h3></div>
+          <ol class="fase-trabajadores">
+          <li class="trabajador" style="--i:0">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Analista</h3>
+            <p class="puesto">Lee el mercado</p>
+            <p>Mira los precios de USDT/VES en vivo, calcula tus ciclos y te muestra la ganancia de cada estrategia con datos reales.</p>
+            <p class="gana"><b>Tu beneficio:</b> sabes cuánto ganas antes de mover un dólar.</p>
+          </li>
+          <li class="trabajador" style="--i:1">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V8"/><path d="m7 13 5-5 5 5"/><path d="M5 3h14"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Posicionador</h3>
+            <p class="puesto">Cuida tu puesto</p>
+            <p>Vigila tu anuncio frente a la competencia y lo mantiene en el puesto que elegiste para que te vean primero.</p>
+            <p class="gana"><b>Tu beneficio:</b> más clientes llegan a tu anuncio y no al de otro.</p>
+          </li>
+          </ol>
+        </div>
+        <p class="relevo"><span>Llega una orden de compra</span></p>
+        <div class="fase">
+          <div class="fase-nombre"><span>Fase 2</span><h3>Pagar cada orden</h3></div>
+          <ol class="fase-trabajadores">
+          <li class="trabajador" style="--i:2">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Vigilante</h3>
+            <p class="puesto">Atiende la puerta</p>
+            <p>Ve cada orden apenas entra en Binance y lee el banco, la cuenta y la cédula del vendedor. Si llegan varias, las pasa en orden de llegada.</p>
+            <p class="gana"><b>Tu beneficio:</b> ninguna orden se queda esperando.</p>
+          </li>
+          <li class="trabajador" style="--i:3">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Pagador</h3>
+            <p class="puesto">Hace la transferencia</p>
+            <p>Paga por Banesco o Mercantil el monto exacto a la cuenta exacta y guarda el comprobante de cada pago.</p>
+            <p class="gana"><b>Tu beneficio:</b> se acabó copiar cuentas y montos a mano.</p>
+          </li>
+          <li class="trabajador" style="--i:4">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/><path d="m9 10 2 2 4-4"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Mensajero</h3>
+            <p class="puesto">Cierra la orden</p>
+            <p>Sube el comprobante al chat de la orden y la marca como pagada para que el vendedor libere tus USDT.</p>
+            <p class="gana"><b>Tu beneficio:</b> pagas rápido, tu perfil gana confianza y repiten contigo.</p>
+          </li>
+          </ol>
+        </div>
+        <p class="relevo"><span>Y te cuenta todo</span></p>
+        <div class="fase">
+          <div class="fase-nombre"><span>Fase 3</span><h3>Tenerte al tanto</h3></div>
+          <ol class="fase-trabajadores">
+          <li class="trabajador" style="--i:5">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/><path d="m9 13 8-6"/></svg></span><span class="turno">En turno</span></div>
+            <h3>El Asistente</h3>
+            <p class="puesto">Tu centro de mando</p>
+            <p>Te avisa por Telegram de cada pago y de lo que necesita tu ojo. Desde el teléfono sabes cómo va tu equipo.</p>
+            <p class="gana"><b>Tu beneficio:</b> te enteras de todo sin estar frente a la PC.</p>
+          </li>
+          <li class="trabajador por-llegar" style="--i:6">
+            <div class="trabajador-cabeza"><span class="trabajador-icono"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="turno">Próximamente</span></div>
+            <h3>El Contador</h3>
+            <p class="puesto">Lleva tus números</p>
+            <p>Llevará tus saldos en Bs y USDT, cada ciclo y tu ganancia acumulada, y te los entregará en Excel con un botón.</p>
+            <p class="gana"><b>Tu beneficio:</b> sabrás exactamente cuánto te deja el negocio.</p>
+          </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="garantias">
+        <p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span><b>Si algo sale raro, nadie improvisa.</b> La orden pasa a Revisión, el Asistente te avisa y el resto del equipo sigue trabajando.</span></p>
+        <p><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span><b>Tus claves no se guardan.</b> Tú inicias sesión en el banco y en Binance; los códigos de pago viven solo en memoria.</span></p>
+        <p><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg><span><b>Tu equipo mejora solo.</b> Al abrir, el programa te avisa de la versión nueva y se actualiza con un clic.</span></p>
       </div>
     </div>
   </section>
@@ -736,14 +818,39 @@ a.video:hover .reproducir { transform: scale(1.06); }
     <div class="envoltura">
       <div class="encabezado">
         <p class="etiqueta">Cómo funciona</p>
-        <h2>De la descarga al primer pago automático.</h2>
+        <h2>Tu parte es corta. El resto lo hace tu equipo.</h2>
+        <p>Así pones a trabajar a los seis, paso a paso.</p>
       </div>
-      <ol class="pasos">
-        <li><h3>Instala</h3><p>Descarga el instalador y ábrelo. Si Windows avisa, pulsa "Más información" y luego "Ejecutar de todas formas".</p></li>
-        <li><h3>Configura una vez</h3><p>Un asistente te pide tu banco, la carpeta de comprobantes y, si quieres, tu Telegram.</p></li>
-        <li><h3>Inicia sesión tú</h3><p>El programa abre Chrome en tu banco y en Binance. Entras con tus datos, como siempre.</p></li>
-        <li><h3>Activa y suelta</h3><p>Pega tu licencia y pulsa Iniciar. Desde ahí el bot paga, sube comprobantes y te avisa.</p></li>
+      <ol class="ruta">
+        <li><span class="ruta-cuando">Una sola vez</span><h3>Contrata a tu equipo</h3><p>Descarga el instalador y ábrelo. Si Windows avisa, pulsa "Más información" y luego "Ejecutar de todas formas".</p></li>
+        <li><span class="ruta-cuando">Una sola vez</span><h3>Dale las instrucciones</h3><p>El asistente de configuración te pide tu banco, la cuenta desde donde pagas, la carpeta de comprobantes y, si quieres, tu Telegram.</p></li>
+        <li><span class="ruta-cuando">Cada día</span><h3>Abre el turno</h3><p>El programa abre Chrome en tu banco y en Binance. Entras tú con tus datos y escribes tus códigos de pago. Nada de eso se guarda.</p></li>
+        <li><span class="ruta-cuando">Cada día</span><h3>Elige la estrategia</h3><p>El Analista te muestra las estrategias con precios reales. Escoges con cuánto trabajar y en qué puesto quieres tu anuncio.</p></li>
+        <li><span class="ruta-cuando">Y listo</span><h3>Pulsa Iniciar y suelta</h3><p>Tu equipo entra a trabajar: atrae clientes, paga, sube comprobantes y te avisa. Tú solo miras Telegram.</p></li>
       </ol>
+
+      <div class="tu-dia">
+        <div class="dia dia-antes">
+          <h3>Tu día sin equipo</h3>
+          <ul>
+            <li>Refrescas Binance a cada rato para no perder órdenes.</li>
+            <li>Copias cuenta, cédula y monto a mano, con miedo a equivocarte.</li>
+            <li>Haces la transferencia, tomas la captura y la subes.</li>
+            <li>Te bajan del puesto y te enteras tarde.</li>
+            <li>Si te paras de la PC, se para el negocio.</li>
+          </ul>
+        </div>
+        <div class="dia dia-despues">
+          <h3>Tu día con P2PAutoPay</h3>
+          <ul>
+            <li>Abres el turno y eliges tu estrategia.</li>
+            <li>Tu equipo atiende cada orden apenas llega.</li>
+            <li>Lees los avisos en Telegram desde donde estés.</li>
+            <li>Solo revisas lo que quedó en Revisión.</li>
+            <li>Usas tu tiempo en hacer crecer el capital.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </section>
 
