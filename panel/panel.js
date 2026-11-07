@@ -547,6 +547,26 @@
     return filas;
   }
 
+  /** Lo que dice la licencia por dentro ({cli, pc, ini, fin}); null si no se puede leer. */
+  function datosLicencia(texto) {
+    try {
+      const b = texto.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+      const crudo = atob(b + "=".repeat((4 - (b.length % 4)) % 4));
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(crudo, (c) => c.charCodeAt(0))));
+    } catch {
+      return null;
+    }
+  }
+
+  /** "2026-10-16" o "16-10-2026" -> "2026-10-16"; otra cosa -> null */
+  function fechaIso(texto) {
+    const t = String(texto || "").trim();
+    let m = t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = t.match(/^(\d{2})[-/](\d{2})[-/](\d{4})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
+  }
+
   $("#importar-csv").addEventListener("change", async (ev) => {
     const archivo = ev.target.files[0];
     ev.target.value = "";
@@ -569,9 +589,11 @@
         cliente = data;
         D.clientes.push(data);
       }
-      const pc = (f[idx.pc] || "").trim().toUpperCase() || "*";
-      const fecha = /^\d{4}-\d{2}-\d{2}/.test(f[idx.fecha] || "") ? f[idx.fecha].slice(0, 10) : null;
-      const vence = /^\d{4}-\d{2}-\d{2}$/.test((f[idx.vence] || "").trim()) ? f[idx.vence].trim() : null;
+      // fechas y PC salen de la propia licencia (el csv trae "16-10-2026" e "ilimitada")
+      const datos = datosLicencia(texto);
+      const pc = String(datos?.pc || f[idx.pc] || "*").trim().toUpperCase();
+      const fecha = datos?.ini || fechaIso(f[idx.fecha]);
+      const vence = datos?.fin || (/ilimitada/i.test(f[idx.vence] || "") ? ILIMITADA : fechaIso(f[idx.vence]));
       const { error } = await sb.from("neg_licencias").insert({
         cliente_id: cliente.id, pc: pc.slice(0, 64), plan: pc === "*" ? "dueno" : "no_verificados",
         vence, estado: "emitida", pedido: "nueva", licencia: texto,
