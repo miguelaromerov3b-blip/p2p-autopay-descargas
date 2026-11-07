@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src https://zgkicomjnrgtjhnjtrxm.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="theme-color" content="#101820">
+<title>Negocio · P2PAutoPay</title>
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="panel.css?v=2">
+</head>
+<body>
+<div id="cargando" class="pantalla-centro"><span class="giro" aria-hidden="true"></span><span class="sr">Cargando</span></div>
+
+<!-- Entrar -->
+<main id="entrar" class="pantalla-centro" hidden>
+  <form id="form-entrar" class="caja-entrar" novalidate>
+    <img src="icono.svg" alt="" width="48" height="48">
+    <h1>Tu negocio</h1>
+    <p class="suave">Panel privado del dueño de P2PAutoPay.</p>
+    <label>Correo<input type="email" name="correo" autocomplete="username" required></label>
+    <label>Contraseña<input type="password" name="clave" autocomplete="current-password" minlength="8" required></label>
+    <p id="entrar-error" class="error" role="alert" hidden></p>
+    <button type="submit" class="boton principal" id="boton-entrar">Entrar</button>
+    <button type="button" class="enlace" id="cambiar-modo">Es mi primera vez: crear mi cuenta</button>
+  </form>
+</main>
+
+<!-- Cuenta sin permiso -->
+<main id="sin-permiso" class="pantalla-centro" hidden>
+  <div class="caja-entrar">
+    <h1>Casi listo</h1>
+    <p>Tu cuenta <strong id="sin-permiso-correo"></strong> ya existe, pero todavía no tiene permiso para ver el negocio.</p>
+    <p class="suave">Avísale a Claude en el hilo del panel y la activa. Después recarga esta página.</p>
+    <button type="button" class="boton" id="salir-2">Salir</button>
+  </div>
+</main>
+
+<!-- Panel -->
+<div id="panel" hidden>
+  <header class="barra">
+    <div class="marca"><img src="icono.svg" alt="" width="28" height="28"><span>Negocio</span></div>
+    <nav class="pestanas" aria-label="Secciones">
+      <button type="button" data-ir="resumen" aria-current="page">Resumen</button>
+      <button type="button" data-ir="licencias">Licencias</button>
+      <button type="button" data-ir="clientes">Clientes</button>
+      <button type="button" data-ir="ventas">Ventas</button>
+    </nav>
+    <button type="button" class="boton pequeno" id="salir">Salir</button>
+  </header>
+
+  <main class="contenido">
+    <!-- RESUMEN -->
+    <section id="sec-resumen" class="seccion">
+      <div class="cabeza">
+        <div>
+          <p class="etiqueta" id="mes-actual"></p>
+          <p class="heroe" id="ingreso-mes">$0</p>
+          <p class="suave" id="ingreso-comparado"></p>
+        </div>
+        <button type="button" class="boton principal" data-accion="nueva-licencia">Nueva licencia</button>
+      </div>
+
+      <dl class="cifras">
+        <div><dt>Licencias activas</dt><dd id="c-activas">0</dd></div>
+        <div><dt>Vencen en 7 días</dt><dd id="c-por-vencer">0</dd></div>
+        <div><dt>Vencidas</dt><dd id="c-vencidas">0</dd></div>
+        <div><dt>Suscripciones al mes</dt><dd id="c-mrr">$0</dd></div>
+        <div><dt>Clientes</dt><dd id="c-clientes">0</dd></div>
+        <div><dt>Ganado en total</dt><dd id="c-total">$0</dd></div>
+      </dl>
+
+      <div class="dos">
+        <article class="bloque">
+          <h2>Ingresos por mes</h2>
+          <div id="grafico" class="grafico" role="img"></div>
+          <table class="tabla-oculta" id="grafico-tabla"><caption>Ingresos por mes</caption><thead><tr><th>Mes</th><th>Ingresos</th></tr></thead><tbody></tbody></table>
+        </article>
+        <article class="bloque">
+          <h2>De la página a la venta <span class="suave">· últimos 30 días</span></h2>
+          <ol class="embudo" id="embudo"></ol>
+        </article>
+      </div>
+
+      <article class="bloque alerta-bloque" id="bloque-alertas" hidden>
+        <h2>Posible licencia copiada</h2>
+        <p class="suave">La misma licencia se abrió en más de un equipo en las últimas 24 horas. Revísala y anúlala si no es del cliente.</p>
+        <ul class="lista" id="lista-alertas"></ul>
+      </article>
+
+      <article class="bloque">
+        <h2>Cobra a tiempo</h2>
+        <p class="suave">Licencias que vencen en los próximos 7 días o ya vencieron.</p>
+        <ul class="lista" id="lista-cobrar"></ul>
+      </article>
+
+      <article class="bloque">
+        <h2>Solicitudes de la página</h2>
+        <ul class="lista" id="lista-solicitudes"></ul>
+      </article>
+    </section>
+
+    <!-- LICENCIAS -->
+    <section id="sec-licencias" class="seccion" hidden>
+      <div class="cabeza">
+        <h1>Licencias</h1>
+        <div class="acciones">
+          <label class="boton" for="importar-csv">Importar emitidas.csv</label>
+          <input type="file" id="importar-csv" accept=".csv,text/csv" hidden>
+          <button type="button" class="boton principal" data-accion="nueva-licencia">Nueva licencia</button>
+        </div>
+      </div>
+      <div class="filtros" role="group" aria-label="Mostrar">
+        <button type="button" data-filtro="vigentes" aria-pressed="true">Vigentes</button>
+        <button type="button" data-filtro="vencidas" aria-pressed="false">Vencidas</button>
+        <button type="button" data-filtro="todas" aria-pressed="false">Todas</button>
+        <input type="search" id="buscar-licencia" placeholder="Buscar dueño o PC" aria-label="Buscar dueño o PC">
+      </div>
+      <ul class="lista" id="lista-licencias"></ul>
+      <p class="nota" id="nota-llave"></p>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="sec-clientes" class="seccion" hidden>
+      <div class="cabeza">
+        <h1>Clientes</h1>
+        <button type="button" class="boton principal" id="nuevo-cliente">Nuevo cliente</button>
+      </div>
+      <ul class="lista" id="lista-clientes"></ul>
+    </section>
+
+    <!-- VENTAS -->
+    <section id="sec-ventas" class="seccion" hidden>
+      <div class="cabeza">
+        <h1>Ventas</h1>
+        <button type="button" class="boton principal" id="nueva-venta">Anotar un pago</button>
+      </div>
+      <ul class="lista" id="lista-ventas"></ul>
+    </section>
+  </main>
+</div>
+
+<!-- Dialogo: nueva licencia / renovar -->
+<dialog id="dlg-licencia">
+  <form id="form-licencia" method="dialog" novalidate>
+    <h2 id="dlg-licencia-titulo">Nueva licencia</h2>
+    <div id="bloque-cliente">
+      <label>Dueño
+        <select name="cliente_id" id="sel-cliente"></select>
+      </label>
+      <div id="cliente-nuevo" class="sub" hidden>
+        <label>Nombre<input name="nombre" maxlength="120" autocomplete="off"></label>
+        <label>Contacto <span class="suave">(Telegram, WhatsApp o correo)</span><input name="contacto" maxlength="200" autocomplete="off"></label>
+      </div>
+      <label>Código de su PC<input name="pc" placeholder="ABCD-EFGH-JKLM-NPQR" autocomplete="off" spellcheck="false" class="mono"></label>
+    </div>
+    <p id="renovar-info" class="sub" hidden></p>
+    <fieldset>
+      <legend>Duración</legend>
+      <div class="opciones" id="opc-duracion">
+        <label><input type="radio" name="duracion" value="1" checked><span>1 mes</span></label>
+        <label><input type="radio" name="duracion" value="3"><span>3 meses</span></label>
+        <label><input type="radio" name="duracion" value="6"><span>6 meses</span></label>
+        <label><input type="radio" name="duracion" value="12"><span>12 meses</span></label>
+        <label><input type="radio" name="duracion" value="ilimitada"><span>Ilimitada</span></label>
+      </div>
+    </fieldset>
+    <label>Plan
+      <select name="plan">
+        <option value="no_verificados">No verificados</option>
+        <option value="verificados">Verificados</option>
+        <option value="dueno">Mía (dueño)</option>
+      </select>
+    </label>
+    <fieldset>
+      <legend>Pago</legend>
+      <div class="fila">
+        <label>Monto (USD)<input name="monto" type="number" min="0" step="0.01" inputmode="decimal"></label>
+        <label>Cómo pagó
+          <select name="metodo">
+            <option>Binance</option><option>Pago Móvil</option><option>Zelle</option>
+            <option>Efectivo</option><option>Transferencia</option><option>Otro</option>
+          </select>
+        </label>
+      </div>
+      <label>Nota <span class="suave">(opcional)</span><input name="nota" maxlength="500" autocomplete="off"></label>
+    </fieldset>
+    <p class="error" id="licencia-error" role="alert" hidden></p>
+    <div class="pie">
+      <button type="button" class="boton" data-cerrar>Cancelar</button>
+      <button type="submit" class="boton principal" id="boton-generar">Generar licencia</button>
+    </div>
+  </form>
+  <div id="licencia-lista" hidden>
+    <h2>Licencia lista</h2>
+    <p class="suave" id="licencia-lista-info"></p>
+    <textarea id="licencia-texto" class="mono" readonly rows="5"></textarea>
+    <p class="aviso" id="licencia-aviso" hidden></p>
+    <div class="pie">
+      <button type="button" class="boton" data-cerrar>Cerrar</button>
+      <button type="button" class="boton principal" id="copiar-nueva">Copiar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Dialogo: cliente -->
+<dialog id="dlg-cliente">
+  <form id="form-cliente" method="dialog" novalidate>
+    <h2 id="dlg-cliente-titulo">Nuevo cliente</h2>
+    <label>Nombre<input name="nombre" maxlength="120" required autocomplete="off"></label>
+    <label>Contacto <span class="suave">(Telegram, WhatsApp o correo)</span><input name="contacto" maxlength="200" autocomplete="off"></label>
+    <label>Notas<textarea name="notas" maxlength="2000" rows="3"></textarea></label>
+    <p class="error" id="cliente-error" role="alert" hidden></p>
+    <div class="pie">
+      <button type="button" class="boton" data-cerrar>Cancelar</button>
+      <button type="submit" class="boton principal">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Dialogo: venta -->
+<dialog id="dlg-venta">
+  <form id="form-venta" method="dialog" novalidate>
+    <h2>Anotar un pago</h2>
+    <label>Cliente<select name="cliente_id" id="sel-cliente-venta"></select></label>
+    <div class="fila">
+      <label>Fecha<input name="fecha" type="date" required></label>
+      <label>Monto (USD)<input name="monto" type="number" min="0" step="0.01" inputmode="decimal" required></label>
+    </div>
+    <div class="fila">
+      <label>Plan
+        <select name="plan">
+          <option value="no_verificados">No verificados</option>
+          <option value="verificados">Verificados</option>
+          <option value="otro">Otro</option>
+        </select>
+      </label>
+      <label>Cómo pagó
+        <select name="metodo">
+          <option>Binance</option><option>Pago Móvil</option><option>Zelle</option>
+          <option>Efectivo</option><option>Transferencia</option><option>Otro</option>
+        </select>
+      </label>
+    </div>
+    <label>Nota <span class="suave">(opcional)</span><input name="nota" maxlength="500" autocomplete="off"></label>
+    <p class="error" id="venta-error" role="alert" hidden></p>
+    <div class="pie">
+      <button type="button" class="boton" data-cerrar>Cancelar</button>
+      <button type="submit" class="boton principal">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="panel.js?v=2"></script>
+</body>
+</html>
