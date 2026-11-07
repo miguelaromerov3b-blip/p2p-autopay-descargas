@@ -9,8 +9,8 @@
   const SUPABASE_URL = "https://zgkicomjnrgtjhnjtrxm.supabase.co";
   const SUPABASE_KEY = "sb_publishable_N-SIwaLCYvcD2CBh2HO9MA_suMsJFWW";
   const ILIMITADA = "9999-12-31";
-  const PRECIO = { no_verificados: 80, verificados: 100, dueno: 0 };
-  const NOMBRE_PLAN = { no_verificados: "No verificados", verificados: "Verificados", dueno: "Dueño", otro: "Otro" };
+  const PRECIO = { no_verificados: 80, verificados: 100, prueba: 0, dueno: 0 };
+  const NOMBRE_PLAN = { no_verificados: "No verificados", verificados: "Verificados", prueba: "Persona de prueba", dueno: "Dueño", otro: "Otro" };
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, storageKey: "p2pa-negocio" },
@@ -152,7 +152,7 @@
   for (const b of $$("[data-cerrar]")) b.addEventListener("click", () => b.closest("dialog").close());
 
   // ---------------------------------------------------------------- datos
-  const D = { clientes: [], licencias: [], ventas: [], descargas: 0, solicitudes: [], vistas: [], llave: null };
+  const D = { clientes: [], licencias: [], ventas: [], descargas: 0, instalador: null, solicitudes: [], vistas: [], llave: null };
 
   async function cargar() {
     const hace30 = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -174,6 +174,23 @@
     D.solicitudes = s.data || [];
     D.vistas = w.error ? [] : w.data || [];
     pintar();
+    descargasGithub();
+  }
+
+  /** Total que cuenta GitHub de los instaladores (.exe) de todas las versiones: es el
+      mismo numero del contador publico de la pagina. Incluye actualizaciones. */
+  async function descargasGithub() {
+    try {
+      const r = await fetch("https://api.github.com/repos/miguelaromerov3b-blip/p2p-autopay-descargas/releases?per_page=100",
+        { headers: { Accept: "application/vnd.github+json" } });
+      if (!r.ok) return;
+      let total = 0;
+      for (const rel of await r.json()) {
+        for (const a of rel.assets || []) if (/\.exe$/i.test(a.name)) total += a.download_count || 0;
+      }
+      D.instalador = total;
+      pintarResumen(estados());
+    } catch { /* sin GitHub, el embudo sigue con lo demas */ }
   }
 
   const clientePorId = (id) => D.clientes.find((c) => c.id === id);
@@ -305,16 +322,17 @@
     // embudo
     const hace30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
     const sol30 = D.solicitudes.filter((s) => s.creada.slice(0, 10) >= hace30).length;
-    const ven30 = D.ventas.filter((v) => v.fecha >= hace30 && v.plan !== "otro").length;
+    const ventasTotal = D.ventas.filter((v) => v.plan !== "otro").length;
     const pasos = [
-      ["Pulsaron Descargar", D.descargas, "Clics en el botón de la página"],
-      ["Pidieron licencia", sol30, "Formulario de la página"],
-      ["Compraron", ven30, D.descargas ? `${((ven30 / D.descargas) * 100).toFixed(1)} % de los que descargaron` : "Pagos anotados en el panel"],
+      ["Descargas del instalador", D.instalador ?? "…", "Total de GitHub, el mismo del contador de la página (incluye actualizaciones)"],
+      ["Pulsaron Descargar en la página", D.descargas, "Últimos 30 días"],
+      ["Pidieron licencia", sol30, "Formulario de la página, últimos 30 días"],
+      ["Compraron", ventasTotal, D.instalador ? `${((ventasTotal / D.instalador) * 100).toFixed(1)} % de las descargas` : "Pagos anotados en el panel"],
     ];
-    const tope = Math.max(D.descargas, sol30, ven30, 1);
+    const tope = Math.max(D.instalador || 0, D.descargas, sol30, ventasTotal, 1);
     $("#embudo").replaceChildren(...pasos.map(([t, n, sub]) => {
       const riel = el("div", { class: "riel" }, el("i", {}));
-      riel.firstChild.style.width = (n / tope) * 100 + "%";
+      riel.firstChild.style.width = (Number(n) || 0) / tope * 100 + "%";
       return el("li", {}, el("span", {}, t), el("strong", {}, n), riel, el("small", {}, sub));
     }));
 
@@ -425,11 +443,19 @@
   function precioSugerido() {
     const plan = fl.plan.value;
     const dur = fl.duracion.value;
-    if (plan === "dueno") return 0;
+    if (plan === "dueno" || plan === "prueba") return 0;
     if (plan === "verificados") return dur === "ilimitada" ? "" : PRECIO.verificados * Number(dur);
     return renovando ? "" : PRECIO.no_verificados;
   }
-  function actualizarMonto() { fl.monto.value = precioSugerido(); }
+  function actualizarMonto() {
+    // persona de prueba: siempre 1 mes y sin pago
+    const prueba = fl.plan.value === "prueba";
+    if (prueba) fl.duracion.value = "1";
+    for (const r of $$("[name=duracion]", fl)) r.disabled = prueba && r.value !== "1";
+    $("#fs-pago").hidden = prueba;
+    $("#nota-prueba").hidden = !prueba;
+    fl.monto.value = precioSugerido();
+  }
   fl.plan.addEventListener("change", actualizarMonto);
   for (const r of $$("[name=duracion]", fl)) r.addEventListener("change", actualizarMonto);
   $("#sel-cliente").addEventListener("change", () => {
@@ -497,7 +523,7 @@
         accion: "emitir", cliente_id: Number(clienteId), pc, plan: fl.plan.value,
         ilimitada: dur === "ilimitada", meses: dur === "ilimitada" ? null : Number(dur),
         renueva_id: renovando ? renovando.id : null,
-        venta: monto > 0 ? { monto_usd: monto, metodo: fl.metodo.value, nota: fl.nota.value.trim() } : null,
+        venta: monto > 0 && fl.plan.value !== "prueba" ? { monto_usd: monto, metodo: fl.metodo.value, nota: fl.nota.value.trim() } : null,
       };
       const { data, error } = await sb.functions.invoke("neg-licencias", { body: cuerpo });
       if (error) {

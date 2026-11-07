@@ -182,6 +182,7 @@ dialog form, #licencia-lista { display: grid; gap: 1rem; }
 .opciones label { display: block; }
 .opciones input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .opciones span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 .9rem; border-radius: 999px; border: 1px solid var(--linea); color: var(--tinta-2); cursor: pointer; font-weight: 600; font-size: .85rem; }
+.opciones input:disabled + span { opacity: .35; cursor: not-allowed; }
 .opciones input:checked + span { background: var(--naranja); border-color: var(--naranja); color: #1a0d06; }
 .opciones input:focus-visible + span { outline: 2px solid var(--naranja); outline-offset: 2px; }
 .pie { display: flex; justify-content: flex-end; gap: .5rem; margin-top: .25rem; }
