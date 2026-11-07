@@ -12,6 +12,16 @@
   const PRECIO = { no_verificados: 80, verificados: 100, prueba: 0, dueno: 0 };
   const NOMBRE_PLAN = { no_verificados: "No verificados", verificados: "Verificados", prueba: "Persona de prueba", dueno: "Dueño", otro: "Otro" };
 
+  // ids de web_planes (formulario de la pagina) -> plan y duracion del panel
+  const PLAN_WEB = {
+    ilimitada: { plan: "no_verificados", duracion: "ilimitada", nombre: "No verificados" },
+    verificados: { plan: "verificados", duracion: "1", nombre: "Verificados" },
+    "1m": { plan: "no_verificados", duracion: "1", nombre: "1 mes" },
+    "3m": { plan: "no_verificados", duracion: "3", nombre: "3 meses" },
+    "6m": { plan: "no_verificados", duracion: "6", nombre: "6 meses" },
+    "12m": { plan: "no_verificados", duracion: "12", nombre: "12 meses" },
+  };
+
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, storageKey: "p2pa-negocio" },
   });
@@ -375,7 +385,7 @@
     return el("li", {},
       el("div", {},
         el("div", { class: "titulo" }, s.nombre || "Sin nombre"),
-        el("div", { class: "detalle" }, [s.contacto, NOMBRE_PLAN[s.plan] || s.plan, s.codigo_pc ? "PC " + s.codigo_pc : "", fechaCorta(s.creada)].filter(Boolean).join(" · ")),
+        el("div", { class: "detalle" }, [s.contacto, PLAN_WEB[s.plan]?.nombre || NOMBRE_PLAN[s.plan] || s.plan, s.codigo_pc ? "PC " + s.codigo_pc : "", fechaCorta(s.creada)].filter(Boolean).join(" · ")),
         s.mensaje ? el("div", { class: "detalle" }, "“" + s.mensaje + "”") : null),
       el("div", { class: "lado" },
         el("button", { type: "button", class: "boton pequeno", onclick: () => atenderSolicitud(s) }, "Ya la atendí"),
@@ -483,12 +493,14 @@
       fl.nombre.value = solicitud.nombre || "";
       fl.contacto.value = solicitud.contacto || "";
       fl.pc.value = solicitud.codigo_pc || "";
-      if (["no_verificados", "verificados"].includes(solicitud.plan)) fl.plan.value = solicitud.plan;
+      const pw = PLAN_WEB[solicitud.plan];
+      if (pw) fl.plan.value = pw.plan;
     } else {
       fl.cliente_id.value = D.clientes.length ? String(D.clientes[0].id) : "nuevo";
     }
     $("#cliente-nuevo").hidden = fl.cliente_id.value !== "nuevo";
     if (fl.plan.value === "no_verificados" && !renovar) fl.duracion.value = "ilimitada";
+    if (solicitud && PLAN_WEB[solicitud.plan]) fl.duracion.value = PLAN_WEB[solicitud.plan].duracion;
     actualizarMonto();
     $("#dlg-licencia").showModal();
   }
