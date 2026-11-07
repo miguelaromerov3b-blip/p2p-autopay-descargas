@@ -372,6 +372,9 @@
     if (e.vigente) {
       lado.append(el("button", { type: "button", class: "boton pequeno peligro", onclick: () => anular(e) }, "Anular"));
     }
+    if (e.tipo === "anulada") {
+      lado.append(el("button", { type: "button", class: "boton pequeno", onclick: () => reactivar(e) }, "Reactivar"));
+    }
     const vence = e.tipo === "ilimitada" ? "sin vencimiento" : e.vence ? "vence " + fechaCorta(e.vence) : "";
     return el("li", {},
       el("div", {},
@@ -423,6 +426,13 @@
     const { error } = await sb.from("neg_licencias").update({ estado: "anulada" }).eq("id", e.id);
     if (error) return avisar("No se pudo anular: " + error.message);
     avisar("Licencia anulada");
+    cargar();
+  }
+
+  async function reactivar(e) {
+    const { error } = await sb.from("neg_licencias").update({ estado: "emitida" }).eq("id", e.id);
+    if (error) return avisar("No se pudo reactivar: " + error.message);
+    avisar("Licencia reactivada");
     cargar();
   }
 
