@@ -159,14 +159,38 @@
   for (const b of $$(".pestanas button")) b.addEventListener("click", () => ir(b.dataset.ir));
 
   // dialogos: cualquier [data-cerrar] cierra el suyo
-  for (const b of $$("[data-cerrar]")) b.addEventListener("click", () => b.closest("dialog").close());
+  for (const b of $$("[data-cerrar]")) b.addEventListener("click", () => {
+    const dialogo = b.closest("dialog");
+    if (dialogo.id === "dlg-licencia" && emitiendoLicencia) return;
+    dialogo.close();
+  });
 
   // ---------------------------------------------------------------- datos
   const D = { clientes: [], licencias: [], ventas: [], descargas: 0, instalador: null, solicitudes: [], vistas: [], llave: null };
 
+  let cargaEnCurso = false;
+  let recargaPendiente = false;
+  let datosActualizados = false;
+  function exigirDatosActualizados(error) {
+    if (datosActualizados) return true;
+    mostrarError(error, "Los datos no están actualizados; tus cambios no se han enviado. ");
+    error.append(el("button", { type: "button", class: "boton pequeno", onclick: () => cargar() }, "Reintentar carga"));
+    return false;
+  }
   async function cargar() {
+    if (cargaEnCurso) {
+      recargaPendiente = true;
+      return;
+    }
+    cargaEnCurso = true;
+    const boton = $("#reintentar-carga");
+    boton.disabled = true;
+    try {
+      do {
+        recargaPendiente = false;
+        try {
     const hace30 = new Date(Date.now() - 30 * 86400000).toISOString();
-    const [c, l, v, d, s, w] = await Promise.all([
+    const resultados = await Promise.allSettled([
       sb.from("neg_clientes").select("*").order("nombre"),
       sb.from("neg_licencias").select("*").order("creada", { ascending: false }),
       sb.from("neg_ventas").select("*").order("fecha", { ascending: false }).order("id", { ascending: false }),
@@ -175,16 +199,42 @@
       // candado en linea: donde se uso cada licencia (si la tabla aun no existe, se ignora)
       sb.from("lic_vistas").select("huella, pc, equipo, version, ultima").order("ultima", { ascending: false }).limit(2000),
     ]);
+    const rechazo = resultados.find(r => r.status === "rejected");
+    if (rechazo) throw rechazo.reason;
+    const [c, l, v, d, s, w] = resultados.map(r => r.value);
     const fallo = [c, l, v].find((r) => r.error);
     if (fallo) throw fallo.error;
+    // La ficha captura objetos y acciones de la lectura anterior.
+    if ($("#dlg-ficha").open) $("#dlg-ficha").close();
     D.clientes = c.data;
     D.licencias = l.data;
     D.ventas = v.data;
-    D.descargas = d.count || 0;
+    D.descargas = d.error ? null : (d.count ?? 0);
     D.solicitudes = s.data || [];
+    D.solicitudesError = !!s.error;
     D.vistas = w.error ? [] : w.data || [];
     pintar();
+    $("#datos-panel").hidden = false;
+    datosActualizados = true;
+    const fallos = [[d, "descargas"], [s, "solicitudes"], [w, "uso de licencias"]].filter(([r]) => r.error).map(([,n]) => n);
+    const nombres = ["clientes", "licencias", "ventas", "solicitudes", "uso de licencias"];
+    const limites = PanelModel.limitesAlcanzados([c, l, v, s, w], [1000, 1000, 1000, 100, 1000]).map(i => nombres[i]);
+    const avisos = [];
+    if (fallos.length) avisos.push("Datos no disponibles: " + fallos.join(", ") + ". No se interpretan como cero.");
+    if (limites.length) avisos.push("Se alcanzó el límite de resultados en: " + limites.join(", ") + ". Puede haber datos omitidos; los totales y listas pueden estar incompletos.");
+    mostrarError($("#error-carga"), avisos.join(" "));
     descargasGithub();
+    } catch (e) {
+      datosActualizados = false;
+      $("#datos-panel").hidden = true;
+      if ($("#dlg-ficha").open) $("#dlg-ficha").close();
+      mostrarError($("#error-carga"), "No se pudieron actualizar los datos. Reintenta. " + (e.message || e));
+        }
+      } while (recargaPendiente);
+    } finally {
+      cargaEnCurso = false;
+      boton.disabled = false;
+    }
   }
 
   /** Total que cuenta GitHub de los instaladores (.exe) de todas las versiones: es el
@@ -200,7 +250,7 @@
       }
       D.instalador = total;
       pintarResumen(estados());
-    } catch { /* sin GitHub, el embudo sigue con lo demas */ }
+    } catch { D.instalador = null; }
   }
 
   const clientePorId = (id) => D.clientes.find((c) => c.id === id);
@@ -279,7 +329,7 @@
     }
     const actual = meses[meses.length - 1];
     const anterior = meses[meses.length - 2];
-    $("#mes-actual").textContent = "Ingresos de " + nombreMes(actual, true);
+    $("#mes-actual").textContent = "Pagos anotados de " + nombreMes(actual, true);
     $("#ingreso-mes").textContent = usd(porMes[actual]);
     const comp = $("#ingreso-comparado");
     comp.replaceChildren();
@@ -300,13 +350,9 @@
     $("#c-por-vencer").className = porVencer.length ? "alerta" : "";
     $("#c-vencidas").textContent = vencidas.length;
     $("#c-vencidas").className = vencidas.length ? "mal" : "";
-    // ingreso fijo: lo que pagan al mes las suscripciones (Verificados) vigentes
-    let mrr = 0;
-    for (const e of vigentes.filter((x) => x.plan === "verificados" && x.tipo !== "ilimitada")) {
-      const pago = D.ventas.find((v) => v.licencia_id === e.id);
-      mrr += pago && e.meses ? Number(pago.monto_usd) / e.meses : PRECIO.verificados;
-    }
-    $("#c-mrr").textContent = usd(Math.round(mrr * 100) / 100);
+    const estimada = PanelModel.estimacion(E, D.ventas);
+    $("#c-mrr").textContent = estimada.sinDatos && !estimada.monto ? "Sin datos" : usd(Math.round(estimada.monto * 100) / 100);
+    $("#mrr-nota").textContent = `Estimación basada en pagos vinculados y duración; ${estimada.sinDatos} licencia(s) sin datos suficientes. No es dinero cobrado este mes.`;
     $("#c-clientes").textContent = D.clientes.length;
     $("#c-total").textContent = usd(total);
 
@@ -335,9 +381,9 @@
     const ventasTotal = D.ventas.filter((v) => v.plan !== "otro").length;
     const pasos = [
       ["Descargas del instalador", D.instalador ?? "…", "Total de GitHub, el mismo del contador de la página (incluye actualizaciones)"],
-      ["Pulsaron Descargar en la página", D.descargas, "Últimos 30 días"],
-      ["Pidieron licencia", sol30, "Formulario de la página, últimos 30 días"],
-      ["Compraron", ventasTotal, D.instalador ? `${((ventasTotal / D.instalador) * 100).toFixed(1)} % de las descargas` : "Pagos anotados en el panel"],
+      ["Pulsaron Descargar en la página", D.descargas ?? "No disponible", "Últimos 30 días"],
+      ["Pidieron licencia", D.solicitudesError ? "No disponible" : sol30, "Formulario de la página, últimos 30 días"],
+      ["Pagos anotados", ventasTotal, "Pagos anotados en el panel"],
     ];
     const tope = Math.max(D.instalador || 0, D.descargas, sol30, ventasTotal, 1);
     $("#embudo").replaceChildren(...pasos.map(([t, n, sub]) => {
@@ -349,31 +395,35 @@
     // cobrar
     const clones = E.filter((e) => e.vigente && e.uso?.clon);
     $("#bloque-alertas").hidden = !clones.length;
-    $("#lista-alertas").replaceChildren(...clones.map(filaLicencia));
-    const cobrar = E.filter((e) => e.tipo === "por-vencer" || (e.tipo === "vencida" && e.dias >= -30))
+    $("#lista-alertas").replaceChildren(...clones.map(e => filaLicencia(e)));
+    const cobrar = E.filter((e) => e.tipo === "por-vencer" || e.tipo === "vencida")
       .sort((a, b) => a.dias - b.dias);
     const lc = $("#lista-cobrar");
-    lc.replaceChildren(...(cobrar.length ? cobrar.map(filaLicencia) : [el("li", { class: "vacio" }, "Nadie vence esta semana. Todo al día.")]));
+    lc.replaceChildren(...(cobrar.length ? cobrar.map(e => filaLicencia(e)) : [el("li", { class: "vacio" }, "No hay vencidas ni licencias que venzan esta semana.")]));
 
     // solicitudes
     const pend = D.solicitudes.filter((s) => !s.atendida);
-    $("#lista-solicitudes").replaceChildren(...(pend.length ? pend.map(filaSolicitud)
+    $("#lista-solicitudes").replaceChildren(...(D.solicitudesError ? [el("li", { class: "vacio" }, "Solicitudes no disponibles.")] : pend.length ? pend.map(filaSolicitud)
       : [el("li", { class: "vacio" }, "No hay solicitudes pendientes de la página.")]));
   }
 
-  function filaLicencia(e) {
+  function filaLicencia(e, desdeFicha = false) {
+    const accion = fn => () => {
+      if (desdeFicha && $("#dlg-ficha").open) $("#dlg-ficha").close();
+      fn();
+    };
     const cliente = clientePorId(e.cliente_id);
     const lado = el("div", { class: "lado" }, chipDias(e));
     if (e.uso?.clon) lado.prepend(el("span", { class: "chip mal", title: "La misma licencia se abrió en otro equipo en las últimas 24 h" }, `${e.uso.equipos} equipos`));
-    if (e.licencia && e.tipo !== "anulada") lado.append(el("button", { type: "button", class: "boton pequeno", onclick: () => copiar(e.licencia) }, "Copiar"));
+    if (e.licencia && e.tipo !== "anulada") lado.append(el("button", { type: "button", class: "boton pequeno", onclick: accion(() => copiar(e.licencia)) }, "Copiar"));
     if (["activa", "por-vencer", "vencida"].includes(e.tipo)) {
-      lado.append(el("button", { type: "button", class: "boton pequeno principal", onclick: () => abrirLicencia({ renovar: e }) }, "Renovar"));
+      lado.append(el("button", { type: "button", class: "boton pequeno principal", onclick: accion(() => abrirLicencia({ renovar: e })) }, "Renovar"));
     }
     if (e.vigente) {
-      lado.append(el("button", { type: "button", class: "boton pequeno peligro", onclick: () => anular(e) }, "Anular"));
+      lado.append(el("button", { type: "button", class: "boton pequeno peligro", onclick: accion(() => anular(e)) }, "Anular"));
     }
     if (e.tipo === "anulada") {
-      lado.append(el("button", { type: "button", class: "boton pequeno", onclick: () => reactivar(e) }, "Reactivar"));
+      lado.append(el("button", { type: "button", class: "boton pequeno", onclick: accion(() => reactivar(e)) }, "Reactivar"));
     }
     const vence = e.tipo === "ilimitada" ? "sin vencimiento" : e.vence ? "vence " + fechaCorta(e.vence) : "";
     return el("li", {},
@@ -414,7 +464,7 @@
     lista.sort((a, b) => filtro === "todas" ? 0 : orden(a) - orden(b));
     const vacio = filtro === "vigentes" ? "Aún no hay licencias vigentes. Crea la primera con «Nueva licencia» o importa tu emitidas.csv."
       : filtro === "vencidas" ? "Ninguna licencia vencida." : "Aún no hay licencias.";
-    $("#lista-licencias").replaceChildren(...(lista.length ? lista.map(filaLicencia) : [el("li", { class: "vacio" }, vacio)]));
+    $("#lista-licencias").replaceChildren(...(lista.length ? lista.map(e => filaLicencia(e)) : [el("li", { class: "vacio" }, vacio)]));
     const nota = $("#nota-llave");
     nota.textContent = D.llave
       ? `Las licencias de este panel se firman con la llave del panel (${D.llave.slice(0, 10)}…). Los clientes las pueden activar desde la versión del programa que ya trae esta llave.`
@@ -459,6 +509,10 @@
   const fl = $("#form-licencia");
   let renovando = null;
   let solicitudActual = null;
+  let emitiendoLicencia = false;
+  $("#dlg-licencia").addEventListener("cancel", (ev) => {
+    if (emitiendoLicencia) ev.preventDefault();
+  });
 
   function precioSugerido() {
     const plan = fl.plan.value;
@@ -474,7 +528,6 @@
     for (const r of $$("[name=duracion]", fl)) r.disabled = prueba && r.value !== "1";
     $("#fs-pago").hidden = prueba;
     $("#nota-prueba").hidden = !prueba;
-    fl.monto.value = precioSugerido();
   }
   fl.plan.addEventListener("change", actualizarMonto);
   for (const r of $$("[name=duracion]", fl)) r.addEventListener("change", actualizarMonto);
@@ -483,6 +536,7 @@
   });
 
   function abrirLicencia({ renovar = null, solicitud = null } = {}) {
+    if (emitiendoLicencia) return;
     renovando = renovar;
     solicitudActual = solicitud;
     fl.reset();
@@ -518,7 +572,9 @@
 
   fl.addEventListener("submit", async (ev) => {
     ev.preventDefault();
+    if (emitiendoLicencia || fl.hidden) return;
     const err = $("#licencia-error");
+    if (!exigirDatosActualizados(err)) return;
     mostrarError(err, "");
     let clienteId = renovando ? renovando.cliente_id : fl.cliente_id.value;
     const pc = renovando ? renovando.pc : fl.pc.value.trim();
@@ -530,22 +586,35 @@
     const dur = fl.duracion.value;
     const monto = fl.monto.value === "" ? 0 : Number(fl.monto.value);
     if (!(monto >= 0)) return mostrarError(err, "El monto no es válido");
+    const solicitudId = solicitudActual ? solicitudActual.id : null;
+    const renuevaId = renovando ? renovando.id : null;
+    const nombre = fl.nombre.value.trim();
+    const contacto = fl.contacto.value.trim() || null;
+    const plan = fl.plan.value;
+    const venta = monto > 0 && plan !== "prueba" ? { monto_usd: monto, metodo: fl.metodo.value, nota: fl.nota.value.trim() } : null;
 
     const boton = $("#boton-generar");
+    emitiendoLicencia = true;
+    const botonesCerrar = $$("[data-cerrar]", $("#dlg-licencia"));
+    botonesCerrar.forEach(b => { b.disabled = true; });
     ocupado(boton, true, "Firmando");
     try {
       if (clienteId === "nuevo") {
         const { data, error } = await sb.from("neg_clientes")
-          .insert({ nombre: fl.nombre.value.trim(), contacto: fl.contacto.value.trim() || null }).select().single();
+          .insert({ nombre, contacto }).select().single();
         if (error) throw error;
         clienteId = data.id;
         D.clientes.push(data);
+        const select = $("#sel-cliente");
+        select.append(el("option", { value: String(data.id) }, data.nombre + (data.contacto ? " · " + data.contacto : "")));
+        select.value = String(data.id);
+        $("#cliente-nuevo").hidden = true;
       }
       const cuerpo = {
-        accion: "emitir", cliente_id: Number(clienteId), pc, plan: fl.plan.value,
+        accion: "emitir", cliente_id: Number(clienteId), pc, plan,
         ilimitada: dur === "ilimitada", meses: dur === "ilimitada" ? null : Number(dur),
-        renueva_id: renovando ? renovando.id : null,
-        venta: monto > 0 && fl.plan.value !== "prueba" ? { monto_usd: monto, metodo: fl.metodo.value, nota: fl.nota.value.trim() } : null,
+        renueva_id: renuevaId,
+        venta,
       };
       const { data, error } = await sb.functions.invoke("neg-licencias", { body: cuerpo });
       if (error) {
@@ -553,7 +622,6 @@
         try { msg = (await error.context.json()).error || msg; } catch { /* sin detalle */ }
         throw new Error(msg);
       }
-      if (solicitudActual) await sb.from("web_solicitudes").update({ atendida: true }).eq("id", solicitudActual.id);
       const lic = data.licencia;
       fl.hidden = true;
       $("#licencia-lista").hidden = false;
@@ -563,10 +631,22 @@
       $("#licencia-aviso").textContent = data.aviso || "";
       $("#licencia-aviso").hidden = !data.aviso;
       $("#copiar-nueva").onclick = () => copiar(lic.licencia);
+      if (solicitudId !== null) {
+        try {
+          const { error: errorSolicitud } = await sb.from("web_solicitudes").update({ atendida: true }).eq("id", solicitudId);
+          if (errorSolicitud) throw errorSolicitud;
+        } catch {
+          const aviso = $("#licencia-aviso");
+          aviso.textContent = [data.aviso, "La licencia se emitió, pero no se pudo marcar la solicitud como atendida. No vuelvas a emitirla; marca la solicitud manualmente."].filter(Boolean).join(" ");
+          aviso.hidden = false;
+        }
+      }
       cargar();
     } catch (e) {
       mostrarError(err, e.message || String(e));
     } finally {
+      emitiendoLicencia = false;
+      botonesCerrar.forEach(b => { b.disabled = false; });
       ocupado(boton, false);
     }
   });
@@ -669,9 +749,21 @@
         el("div", { class: "lado" },
           proxima ? chipDias(proxima) : vig.length ? el("span", { class: "chip siempre" }, "Ilimitada") : null,
           el("span", { class: "monto" }, usd(pagado)),
+          el("button", { type: "button", class: "boton pequeno", onclick: () => abrirFicha(c) }, "Ver ficha"),
           el("button", { type: "button", class: "boton pequeno", onclick: () => abrirCliente(c) }, "Editar")));
     });
     $("#lista-clientes").replaceChildren(...(lista.length ? lista : [el("li", { class: "vacio" }, "Aún no hay clientes. Se crean solos al generar su licencia.")]));
+  }
+
+  function abrirFicha(c) {
+    $("#ficha-titulo").textContent = c.nombre;
+    $("#ficha-contacto").textContent = [c.contacto, c.notas].filter(Boolean).join(" · ") || "Sin contacto ni notas";
+    const lic = estados().filter(e => e.cliente_id === c.id);
+    $("#ficha-licencias").replaceChildren(...(lic.length ? lic.map(e => filaLicencia(e, true)) : [el("li", {class:"vacio"}, "Sin licencias") ]));
+    const pagos = D.ventas.filter(v => v.cliente_id === c.id);
+    $("#ficha-pagos").replaceChildren(...(pagos.length ? pagos.map(v => el("li", {}, el("div", {}, `${fechaCorta(v.fecha)} · ${NOMBRE_PLAN[v.plan] || v.plan} · ${v.metodo || ""} · ${v.nota || ""}`), el("span", {class:"monto"}, usd(v.monto_usd)))) : [el("li", {class:"vacio"}, "Sin pagos anotados") ]));
+    $("#ficha-pago").onclick = () => { $("#dlg-ficha").close(); abrirVenta(c); };
+    $("#dlg-ficha").showModal();
   }
 
   let editandoCliente = null;
@@ -687,6 +779,7 @@
   $("#nuevo-cliente").addEventListener("click", () => abrirCliente());
   $("#form-cliente").addEventListener("submit", async (ev) => {
     ev.preventDefault();
+    if (!exigirDatosActualizados($("#cliente-error"))) return;
     const f = ev.target;
     const datos = { nombre: f.nombre.value.trim(), contacto: f.contacto.value.trim() || null, notas: f.notas.value.trim() || null };
     if (!datos.nombre) return mostrarError($("#cliente-error"), "Escribe el nombre");
@@ -720,34 +813,61 @@
     cargar();
   }
 
-  $("#nueva-venta").addEventListener("click", () => {
+  function llenarLicenciasVenta() {
+    const f = $("#form-venta");
+    const sel = f.licencia_id;
+    const disponibles = D.licencias.filter(l => f.cliente_id.value && String(l.cliente_id) === f.cliente_id.value);
+    sel.replaceChildren(el("option", { value: "" }, "Sin vincular"), ...disponibles.map(l =>
+      el("option", { value: String(l.id) }, `PC ${l.pc} · ${NOMBRE_PLAN[l.plan] || l.plan} · ${l.vence ? fechaCorta(l.vence) : "sin fecha"}`)));
+  }
+  $("#sel-cliente-venta").addEventListener("change", llenarLicenciasVenta);
+
+  function abrirVenta(cliente = null) {
     const f = $("#form-venta");
     f.reset();
     llenarSelectsClientes();
+    if (cliente) f.cliente_id.value = String(cliente.id);
+    llenarLicenciasVenta();
     f.fecha.value = hoy();
-    f.monto.value = PRECIO.no_verificados;
+    f.monto.value = "";
     mostrarError($("#venta-error"), "");
     $("#dlg-venta").showModal();
-  });
-  $("#form-venta").plan.addEventListener("change", (ev) => {
-    const p = ev.target.value;
-    if (PRECIO[p]) $("#form-venta").monto.value = PRECIO[p];
-  });
+  }
+  $("#nueva-venta").addEventListener("click", () => abrirVenta());
+  let ventaEnCurso = false;
   $("#form-venta").addEventListener("submit", async (ev) => {
     ev.preventDefault();
+    if (ventaEnCurso) return;
+    if (!exigirDatosActualizados($("#venta-error"))) return;
     const f = ev.target;
     const monto = Number(f.monto.value);
     if (!(monto > 0)) return mostrarError($("#venta-error"), "Escribe el monto");
     if (!f.fecha.value) return mostrarError($("#venta-error"), "Elige la fecha");
-    const { error } = await sb.from("neg_ventas").insert({
-      fecha: f.fecha.value, cliente_id: f.cliente_id.value ? Number(f.cliente_id.value) : null,
-      plan: f.plan.value, monto_usd: monto, metodo: f.metodo.value, nota: f.nota.value.trim() || null,
-    });
-    if (error) return mostrarError($("#venta-error"), error.message);
-    $("#dlg-venta").close();
-    avisar("Pago anotado");
-    cargar();
+    if (!PanelModel.licenciaValida(D.licencias, f.cliente_id.value, f.licencia_id.value))
+      return mostrarError($("#venta-error"), "Elige una licencia del mismo cliente.");
+    ventaEnCurso = true;
+    const boton = $('button[type="submit"]', f);
+    ocupado(boton, true, "Guardando");
+    mostrarError($("#venta-error"), "");
+    try {
+      const { error } = await sb.from("neg_ventas").insert({
+        licencia_id: f.licencia_id.value ? Number(f.licencia_id.value) : null,
+        fecha: f.fecha.value, cliente_id: f.cliente_id.value ? Number(f.cliente_id.value) : null,
+        plan: f.plan.value, monto_usd: monto, metodo: f.metodo.value, nota: f.nota.value.trim() || null,
+      });
+      if (error) return mostrarError($("#venta-error"), error.message);
+      $("#dlg-venta").close();
+      avisar("Pago anotado");
+      cargar();
+    } catch (error) {
+      mostrarError($("#venta-error"), "No se pudo guardar el pago: " + (error.message || error));
+    } finally {
+      ventaEnCurso = false;
+      ocupado(boton, false);
+    }
   });
+
+  $("#reintentar-carga").addEventListener("click", () => cargar());
 
   // ---------------------------------------------------------------- arranque
   async function arrancar() {
@@ -774,7 +894,7 @@
 
   // al volver a la pestana (p. ej. en el telefono) se refrescan los datos
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && !$("#panel").hidden) cargar().catch(() => {});
+    if (document.visibilityState === "visible" && !$("#panel").hidden) cargar();
   });
 
   arrancar();

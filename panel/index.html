@@ -52,6 +52,8 @@
   </header>
 
   <main class="contenido">
+    <div class="bloque"><p id="error-carga" class="error" role="alert" hidden></p><button type="button" class="boton pequeno" id="reintentar-carga">Actualizar datos</button></div>
+    <div id="datos-panel" hidden>
     <!-- RESUMEN -->
     <section id="sec-resumen" class="seccion">
       <div class="cabeza">
@@ -67,16 +69,16 @@
         <div><dt>Licencias activas</dt><dd id="c-activas">0</dd></div>
         <div><dt>Vencen en 7 días</dt><dd id="c-por-vencer">0</dd></div>
         <div><dt>Vencidas</dt><dd id="c-vencidas">0</dd></div>
-        <div><dt>Suscripciones al mes</dt><dd id="c-mrr">$0</dd></div>
+        <div><dt>Estimación mensual, no cobrado</dt><dd id="c-mrr">—</dd><small id="mrr-nota"></small></div>
         <div><dt>Clientes</dt><dd id="c-clientes">0</dd></div>
-        <div><dt>Ganado en total</dt><dd id="c-total">$0</dd></div>
+        <div><dt>Pagos anotados en total</dt><dd id="c-total">$0</dd></div>
       </dl>
 
       <div class="dos">
         <article class="bloque">
-          <h2>Ingresos por mes</h2>
+          <h2>Pagos anotados por mes</h2>
           <div id="grafico" class="grafico" role="img"></div>
-          <table class="tabla-oculta" id="grafico-tabla"><caption>Ingresos por mes</caption><thead><tr><th>Mes</th><th>Ingresos</th></tr></thead><tbody></tbody></table>
+          <table class="tabla-oculta" id="grafico-tabla"><caption>Pagos anotados por mes</caption><thead><tr><th>Mes</th><th>Ingresos</th></tr></thead><tbody></tbody></table>
         </article>
         <article class="bloque">
           <h2>De la página a la venta</h2>
@@ -139,6 +141,7 @@
       </div>
       <ul class="lista" id="lista-ventas"></ul>
     </section>
+    </div>
   </main>
 </div>
 
@@ -177,7 +180,8 @@
     </label>
     <p class="sub" id="nota-prueba" hidden>Dura 1 mes y no lleva pago. Si quieres que siga probando, la renuevas tú cuando le toque.</p>
     <fieldset id="fs-pago">
-      <legend>Pago</legend>
+      <legend>Pago recibido (opcional)</legend>
+      <p class="suave">Déjalo vacío si no has recibido un pago. No se registra una venta.</p>
       <div class="fila">
         <label>Monto (USD)<input name="monto" type="number" min="0" step="0.01" inputmode="decimal"></label>
         <label>Cómo pagó
@@ -222,11 +226,19 @@
   </form>
 </dialog>
 
+<dialog id="dlg-ficha" aria-labelledby="ficha-titulo">
+  <h2 id="ficha-titulo"></h2><p id="ficha-contacto" class="suave"></p>
+  <h2>Licencias y vencimientos</h2><ul class="lista" id="ficha-licencias"></ul>
+  <h2>Pagos anotados</h2><ul class="lista" id="ficha-pagos"></ul>
+  <div class="pie"><button type="button" class="boton" data-cerrar>Cerrar</button><button type="button" class="boton principal" id="ficha-pago">Anotar pago</button></div>
+</dialog>
+
 <!-- Dialogo: venta -->
 <dialog id="dlg-venta">
   <form id="form-venta" method="dialog" novalidate>
     <h2>Anotar un pago</h2>
     <label>Cliente<select name="cliente_id" id="sel-cliente-venta"></select></label>
+    <label>Licencia (opcional)<select name="licencia_id" id="sel-licencia-venta"></select></label>
     <div class="fila">
       <label>Fecha<input name="fecha" type="date" required></label>
       <label>Monto (USD)<input name="monto" type="number" min="0" step="0.01" inputmode="decimal" required></label>
@@ -258,6 +270,7 @@
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="panel.js?v=7"></script>
+<script src="panel-model.js?v=9"></script>
+<script src="panel.js?v=10"></script>
 </body>
 </html>
