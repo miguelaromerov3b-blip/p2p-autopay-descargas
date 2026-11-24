@@ -47,6 +47,7 @@
       <button type="button" data-ir="licencias">Licencias</button>
       <button type="button" data-ir="clientes">Clientes</button>
       <button type="button" data-ir="ventas">Ventas</button>
+      <button type="button" data-ir="gastos">Gastos</button>
     </nav>
     <button type="button" class="boton pequeno" id="salir">Salir</button>
   </header>
@@ -65,6 +66,7 @@
         <button type="button" class="boton principal" data-accion="nueva-licencia">Nueva licencia</button>
       </div>
 
+      <article class="bloque"><h2>Resultado registrado del mes</h2><p id="resultado-mes">No disponible</p><p class="suave">Pagos anotados menos gastos anotados del mismo mes. No es un beneficio contable ni dinero conciliado.</p><p id="gastos-resumen" class="suave"></p></article>
       <dl class="cifras">
         <div><dt>Licencias activas</dt><dd id="c-activas">0</dd></div>
         <div><dt>Vencen en 7 días</dt><dd id="c-por-vencer">0</dd></div>
@@ -140,6 +142,10 @@
         <button type="button" class="boton principal" id="nueva-venta">Anotar un pago</button>
       </div>
       <ul class="lista" id="lista-ventas"></ul>
+    </section>
+    <section id="sec-gastos" class="seccion" hidden>
+      <div class="cabeza"><h1>Gastos</h1><button type="button" class="boton principal" id="nuevo-gasto">Anotar gasto</button></div>
+      <p class="suave">Solo gastos reales anotados manualmente, en USD.</p><p id="gastos-error" class="error" role="alert" hidden></p><ul class="lista" id="lista-gastos"></ul>
     </section>
     </div>
   </main>
@@ -267,10 +273,15 @@
   </form>
 </dialog>
 
+<dialog id="dlg-gasto"><form id="form-gasto" method="dialog" novalidate>
+<h2 id="gasto-titulo">Anotar gasto</h2>
+<div class="fila"><label>Fecha<input name="fecha" type="date" required></label><label>Monto (USD)<input name="monto" type="number" min="0.01" step="0.01" inputmode="decimal" required></label></div>
+<label>Descripción<input name="descripcion" maxlength="200" required></label><label>Categoría<input name="categoria" maxlength="100" required></label><label>Nota (opcional)<input name="nota" maxlength="500"></label>
+<p id="gasto-form-error" class="error" role="alert" hidden></p><div class="pie"><button type="button" class="boton" data-cerrar>Cancelar</button><button type="submit" class="boton principal">Guardar</button></div></form></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="panel-model.js?v=9"></script>
-<script src="panel.js?v=10"></script>
+<script src="panel-model.js?v=10"></script>
+<script src="panel.js?v=12"></script>
 </body>
 </html>

@@ -161,7 +161,7 @@
   // dialogos: cualquier [data-cerrar] cierra el suyo
   for (const b of $$("[data-cerrar]")) b.addEventListener("click", () => {
     const dialogo = b.closest("dialog");
-    if (dialogo.id === "dlg-licencia" && emitiendoLicencia) return;
+    if ((dialogo.id === "dlg-licencia" && emitiendoLicencia) || (dialogo.id === "dlg-gasto" && gastoEnCurso)) return;
     dialogo.close();
   });
 
@@ -171,6 +171,13 @@
   let cargaEnCurso = false;
   let recargaPendiente = false;
   let datosActualizados = false;
+  let gastosActualizados = false;
+  let ventasCompletas = false;
+  let gastos = [];
+  let gastoEnCurso = false;
+  let gastoEditando = null;
+  let versionGastos = 0;
+  let versionFormularioGasto = 0;
   function exigirDatosActualizados(error) {
     if (datosActualizados) return true;
     mostrarError(error, "Los datos no están actualizados; tus cambios no se han enviado. ");
@@ -183,17 +190,25 @@
       return;
     }
     cargaEnCurso = true;
+    gastosActualizados = false;
+    pintarGastos();
     const boton = $("#reintentar-carga");
     boton.disabled = true;
     try {
       do {
         recargaPendiente = false;
+        versionGastos++;
+        gastosActualizados = false;
+        ventasCompletas = false;
+        pintarGastos();
         try {
     const hace30 = new Date(Date.now() - 30 * 86400000).toISOString();
+    const versionCarga = versionGastos;
+    cargarGastos(versionCarga);
     const resultados = await Promise.allSettled([
       sb.from("neg_clientes").select("*").order("nombre"),
       sb.from("neg_licencias").select("*").order("creada", { ascending: false }),
-      sb.from("neg_ventas").select("*").order("fecha", { ascending: false }).order("id", { ascending: false }),
+      sb.from("neg_ventas").select("*", { count: "exact" }).order("fecha", { ascending: false }).order("id", { ascending: false }),
       sb.from("web_descargas").select("id", { count: "exact", head: true }).gte("creada", hace30),
       sb.from("web_solicitudes").select("*").order("creada", { ascending: false }).limit(100),
       // candado en linea: donde se uso cada licencia (si la tabla aun no existe, se ignora)
@@ -209,11 +224,13 @@
     D.clientes = c.data;
     D.licencias = l.data;
     D.ventas = v.data;
+    ventasCompletas = PanelModel.completo(v);
     D.descargas = d.error ? null : (d.count ?? 0);
     D.solicitudes = s.data || [];
     D.solicitudesError = !!s.error;
     D.vistas = w.error ? [] : w.data || [];
     pintar();
+    pintarGastos();
     $("#datos-panel").hidden = false;
     datosActualizados = true;
     const fallos = [[d, "descargas"], [s, "solicitudes"], [w, "uso de licencias"]].filter(([r]) => r.error).map(([,n]) => n);
@@ -221,11 +238,13 @@
     const limites = PanelModel.limitesAlcanzados([c, l, v, s, w], [1000, 1000, 1000, 100, 1000]).map(i => nombres[i]);
     const avisos = [];
     if (fallos.length) avisos.push("Datos no disponibles: " + fallos.join(", ") + ". No se interpretan como cero.");
+    if (!ventasCompletas) avisos.push("Pagos incompletos o sin conteo exacto: las cifras de pagos pueden estar incompletas.");
     if (limites.length) avisos.push("Se alcanzó el límite de resultados en: " + limites.join(", ") + ". Puede haber datos omitidos; los totales y listas pueden estar incompletos.");
     mostrarError($("#error-carga"), avisos.join(" "));
     descargasGithub();
     } catch (e) {
       datosActualizados = false;
+      gastosActualizados = false;
       $("#datos-panel").hidden = true;
       if ($("#dlg-ficha").open) $("#dlg-ficha").close();
       mostrarError($("#error-carga"), "No se pudieron actualizar los datos. Reintenta. " + (e.message || e));
@@ -867,9 +886,179 @@
     }
   });
 
+  // La consulta independiente nunca retrasa la carga de las demás secciones.
+  async function cargarGastos(version) {
+    const controller = new AbortController();
+    let timer;
+    try {
+      const consulta = sb.from("neg_gastos").select("id,fecha,descripcion,categoria,monto_usd,nota", {count:"exact"}).is("deleted_at", null).order("fecha", {ascending:false}).order("id", {ascending:false}).abortSignal(controller.signal);
+      const r = await Promise.race([consulta, new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("Tiempo agotado")); }, 5000); })]);
+      if (version !== versionGastos) return;
+      gastosActualizados = PanelModel.completo(r);
+      if (gastosActualizados) gastos = r.data;
+    } catch (_) {
+      if (version !== versionGastos) return;
+      gastosActualizados = false;
+    } finally { clearTimeout(timer); }
+    if (version === versionGastos) pintarGastos();
+  }
+  // Los gastos son independientes: un fallo no bloquea ventas ni licencias.
+  function pintarGastos() {
+    const err = $("#gastos-error");
+    if (!gastosActualizados) {
+      mostrarError(err, "Gastos no disponibles o incompletos. Actualiza los datos antes de modificar gastos.");
+      $("#lista-gastos").replaceChildren();
+      $("#resultado-mes").textContent = "No disponible";
+      $("#gastos-resumen").textContent = "No se pudieron obtener todos los gastos; no se muestran como cero.";
+      return;
+    }
+    mostrarError(err, "");
+    try {
+      const r = PanelModel.resultadoRegistrado(ventasCompletas ? D.ventas : [], gastos, hoy().slice(0, 7));
+      $("#resultado-mes").textContent = !ventasCompletas ? "No disponible: la lista de pagos puede estar incompleta." : `${usd(r.pagos)} pagos − ${usd(r.gastos)} gastos = ${usd(r.resultado)}`;
+      $("#gastos-resumen").textContent = `Gastos anotados en total: ${usd(r.gastosTotal)}`;
+    } catch (_) {
+      $("#resultado-mes").textContent = "No disponible: hay montos inválidos o fuera de rango.";
+      $("#gastos-resumen").textContent = "No disponible: revisa los montos registrados.";
+    }
+    $("#lista-gastos").replaceChildren(...(gastos.length ? gastos.map(g => el("li", {},
+      el("div", {}, el("div", {class:"titulo"}, g.descripcion), el("div", {class:"detalle"}, [fechaCorta(g.fecha), g.categoria, g.nota].filter(Boolean).join(" · "))),
+      el("div", {class:"lado"}, el("span", {class:"monto"}, usd(g.monto_usd)), el("button", {type:"button", class:"boton pequeno", onclick: () => abrirGasto(g)}, "Editar"), el("button", {type:"button", class:"boton pequeno peligro", onclick: () => borrarGasto(g)}, "Eliminar")))) : [el("li", {class:"vacio"}, "Aún no hay gastos anotados.")]));
+  }
+  function puedeGasto(error) {
+    if (!exigirDatosActualizados(error)) return false;
+    if (!gastosActualizados || cargaEnCurso || recargaPendiente) { mostrarError(error, "Los gastos no están actualizados. Actualiza los datos y vuelve a intentar."); return false; }
+    return true;
+  }
+  // Persistir antes de enviar: una respuesta perdida no demuestra que no se guardó.
+  let claveFormularioGasto = null;
+  let aperturaGastoVersion = 0;
+  async function claveGastoActual() {
+    const {data, error} = await sb.auth.getSession();
+    if (error || !data?.session?.user?.id) throw new Error("No se puede identificar la cuenta autenticada. Vuelve a iniciar sesión.");
+    if (localStorage.getItem("p2p.gasto.pendiente.v1")) throw new Error("Hay un intento antiguo sin cuenta identificable. No se puede resolver automáticamente; contacta soporte antes de crear gastos.");
+    return PanelModel.clavePendiente(SUPABASE_URL, data.session.user.id);
+  }
+  function pendienteGasto(clave) { return JSON.parse(localStorage.getItem(clave) || "null"); }
+  async function consultaGastoConLimite(crearConsulta) {
+    const controller = new AbortController(); let timer;
+    try {
+      return await Promise.race([
+        crearConsulta().abortSignal(controller.signal),
+        new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("Tiempo agotado")); }, 5000); })
+      ]);
+    } finally { clearTimeout(timer); }
+  }
+  async function abrirGasto(g = null) {
+    if (gastoEnCurso || !puedeGasto($("#gastos-error"))) return;
+    const apertura = ++aperturaGastoVersion;
+    let clave;
+    try { clave = await claveGastoActual(); } catch (e) { return mostrarError($("#gastos-error"), e.message); }
+    if (gastoEnCurso || apertura !== aperturaGastoVersion) return;
+    claveFormularioGasto = clave;
+    gastoEditando = g; versionFormularioGasto = versionGastos; const f = $("#form-gasto"); f.reset();
+    let pendiente;
+    try { pendiente = !g && pendienteGasto(claveFormularioGasto); } catch (_) { return mostrarError($("#gastos-error"), "No se puede leer el intento pendiente. No se puede crear un gasto con seguridad."); }
+    const valores = pendiente?.datos || g;
+    f.fecha.value = valores?.fecha || hoy(); f.descripcion.value = valores?.descripcion || ""; f.categoria.value = valores?.categoria || ""; f.monto.value = valores?.monto_usd ?? ""; f.nota.value = valores?.nota || "";
+    $("#gasto-titulo").textContent = g ? "Editar gasto" : "Anotar gasto";
+    $('button[type="submit"]', f).textContent = pendiente ? "Resolver intento anterior" : "Guardar";
+    mostrarError($("#gasto-form-error"), pendiente ? "Hay un intento anterior sin confirmar. Al guardar se comprobará antes de reintentar; pudo haberse guardado." : ""); $("#dlg-gasto").showModal();
+  }
+  $("#nuevo-gasto").addEventListener("click", () => abrirGasto());
+  $("#dlg-gasto").addEventListener("cancel", e => { if (gastoEnCurso) e.preventDefault(); });
+  $("#form-gasto").addEventListener("submit", async e => {
+    e.preventDefault(); if (gastoEnCurso) return;
+    const f = e.target, error = $("#gasto-form-error"), boton = $('button[type="submit"]', f);
+    gastoEnCurso = true; ++aperturaGastoVersion;
+    f.inert = true; ocupado(boton, true, "Guardando");
+    try {
+    if (!navigator.locks) return mostrarError(error, "Este navegador no permite coordinar los intentos entre pestañas. No se puede guardar con seguridad.");
+    return await navigator.locks.request("p2p-gasto-escritura", {ifAvailable:true}, async lock => {
+    if (!lock) return mostrarError(error, "Hay otra operación de gasto en curso en otra pestaña.");
+    if (!puedeGasto(error)) return;
+    try { if (await claveGastoActual() !== claveFormularioGasto) throw new Error("La cuenta cambió. Cierra el formulario y vuelve a abrirlo."); } catch (err) { return mostrarError(error, err.message); }
+    if (gastoEditando && versionFormularioGasto !== versionGastos) return mostrarError(error, "Los datos cambiaron. Copia lo escrito, cierra y vuelve a abrir el gasto antes de guardar.");
+    let centavos;
+    try { centavos = PanelModel.centavos(f.monto.value); } catch (_) { centavos = 0; }
+    const monto = centavos / 100;
+    if (!f.fecha.value || !f.descripcion.value.trim() || !f.categoria.value.trim() || centavos <= 0 || !f.monto.validity.valid) return mostrarError(error, "Completa fecha, descripción, categoría y monto positivo en USD (hasta dos decimales).");
+    const datos = {fecha:f.fecha.value, descripcion:f.descripcion.value.trim(), categoria:f.categoria.value.trim(), monto_usd:monto, nota:f.nota.value.trim() || null};
+    if (!gastoEditando) {
+      try { const anterior = pendienteGasto(claveFormularioGasto); if (anterior) PanelModel.verificarPendiente(anterior, datos); }
+      catch (err) { return mostrarError(error, err.message); }
+    }
+    mostrarError(error, "");
+    try {
+      let r;
+      if (gastoEditando) {
+        r = await consultaGastoConLimite(() => PanelModel.filtrarGastoOriginal(sb.from("neg_gastos").update(datos), gastoEditando).is("deleted_at", null).select("id"));
+      } else {
+        let pendiente = pendienteGasto(claveFormularioGasto);
+        if (pendiente) {
+          PanelModel.verificarPendiente(pendiente, datos);
+          const anterior = await consultaGastoConLimite(() => sb.from("neg_gastos").select("id,fecha,descripcion,categoria,monto_usd,nota,client_request_id,deleted_at").eq("client_request_id", pendiente.id));
+          if (anterior.error || !Array.isArray(anterior.data) || anterior.data.length > 1) throw new Error("No se pudo comprobar el intento anterior");
+          if (await claveGastoActual() !== claveFormularioGasto) throw new Error("La cuenta cambió durante la comprobación.");
+          if (anterior.data.length) {
+            const guardado = anterior.data[0];
+            const coincide = Object.keys(pendiente.datos).every(k => k === "monto_usd" ? Number(guardado[k]) === pendiente.datos[k] : guardado[k] === pendiente.datos[k]);
+            if (!coincide && !guardado.deleted_at && !confirm("El gasto anterior existe pero fue modificado. ¿Confirmas que ya revisaste la lista y quieres resolver este intento?")) return;
+            if (pendienteGasto(claveFormularioGasto)?.id !== pendiente.id) throw new Error("Otro intento cambió en otra pestaña; actualiza antes de continuar.");
+            localStorage.removeItem(claveFormularioGasto); $("#dlg-gasto").close(); avisar(guardado.deleted_at ? "El gasto anterior ya fue eliminado" : "El gasto ya estaba guardado"); gastosActualizados = false; pintarGastos(); cargar(); return;
+          }
+        }
+        if (!pendiente) {
+          pendiente = {id:crypto.randomUUID(), datos};
+          localStorage.setItem(claveFormularioGasto, JSON.stringify(pendiente));
+          if (localStorage.getItem(claveFormularioGasto) !== JSON.stringify(pendiente)) throw new Error("No se pudo conservar la clave del intento");
+        }
+        r = await consultaGastoConLimite(() => sb.from("neg_gastos").insert({...pendiente.datos, client_request_id:pendiente.id}).select("id"));
+      }
+      if (r.error) throw r.error;
+      if (!r.data || r.data.length !== 1) throw new Error("El gasto cambió o ya no está disponible. Copia tus cambios y actualiza antes de reintentar.");
+      if (!gastoEditando) { if (await claveGastoActual() !== claveFormularioGasto) throw new Error("La cuenta cambió; resuelve el intento con la cuenta original."); localStorage.removeItem(claveFormularioGasto); }
+      $("#dlg-gasto").close(); avisar("Gasto guardado"); gastosActualizados = false; pintarGastos(); cargar();
+    } catch (err) {
+      gastosActualizados = false; pintarGastos();
+      mostrarError(error, "Resultado incierto: el gasto pudo guardarse. Conserva estos datos y actualiza antes de reintentar. " + (err.message || err));
+      error.append(el("button", {type:"button", class:"boton pequeno", onclick: () => cargar()}, "Actualizar datos"));
+    }
+    });
+    } catch (err) {
+      mostrarError(error, "No se pudo coordinar el guardado: " + (err.message || err));
+    } finally { gastoEnCurso = false; f.inert = false; ocupado(boton, false); }
+  });
+  async function borrarGasto(g) {
+    if (gastoEnCurso || !puedeGasto($("#gastos-error"))) return;
+    if (!confirm(`¿Eliminar el gasto ${g.descripcion} de ${usd(g.monto_usd)}?`)) return;
+    if (!puedeGasto($("#gastos-error"))) return;
+    gastoEnCurso = true;
+    try {
+      const r = await consultaGastoConLimite(() => PanelModel.filtrarGastoOriginal(sb.from("neg_gastos").update({deleted_at:new Date().toISOString()}), g).is("deleted_at", null).select("id"));
+      if (r.error) throw r.error;
+      if (!r.data || r.data.length !== 1) throw new Error("El gasto cambió o ya no está disponible; no se eliminó.");
+      avisar("Gasto eliminado"); gastosActualizados = false; pintarGastos(); cargar();
+    } catch (err) { gastosActualizados = false; pintarGastos(); mostrarError($("#gastos-error"), "Resultado incierto: el gasto pudo eliminarse. Actualiza y comprueba antes de reintentar. " + (err.message || err)); }
+    finally { gastoEnCurso = false; }
+  }
+
   $("#reintentar-carga").addEventListener("click", () => cargar());
 
   // ---------------------------------------------------------------- arranque
+  sb.auth.onAuthStateChange?.((_evento, session) => {
+    if (!claveFormularioGasto) return;
+    let actual;
+    try { actual = PanelModel.clavePendiente(SUPABASE_URL, session?.user?.id); } catch (_) { actual = null; }
+    if (actual !== claveFormularioGasto) {
+      claveFormularioGasto = null;
+      $("#form-gasto").reset();
+      if ($("#dlg-gasto").open) $("#dlg-gasto").close();
+      gastosActualizados = false;
+      pintarGastos();
+      mostrarError($("#gastos-error"), "La cuenta cambió. Actualiza los datos antes de gestionar gastos.");
+    }
+  });
   async function arrancar() {
     pantalla("cargando");
     const { data: { session } } = await sb.auth.getSession();
