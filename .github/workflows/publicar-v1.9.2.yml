@@ -1,0 +1,26 @@
+name: Publicar instalador 1.9.2
+on:
+  workflow_dispatch:
+    inputs:
+      descarga:
+        description: Enlace temporal del instalador verificado
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar y publicar el instalador
+        shell: bash
+        env:
+          DESCARGA: ${{ inputs.descarga }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "::add-mask::$DESCARGA"
+          archivo=P2PAutoPay-Setup-1.9.2.exe
+          curl --proto '=https' --fail --silent --max-time 90 --output "$archivo" "$DESCARGA"
+          echo 'aa591d3876777dbc1faa405426f757933d685ce4af5a40b86d956a6e57965496  P2PAutoPay-Setup-1.9.2.exe' | sha256sum --check
+          gh api --method POST "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/461246837/assets?name=$archivo" --header 'Content-Type: application/octet-stream' --input "$archivo" --jq .state
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/461246837" -F draft=false --jq .html_url
